@@ -1,0 +1,12 @@
+:root {
+  color-scheme: light;
+  --board-max-width: 560px;
+  --mdui-font-family: "Roboto", "Noto Sans CJK SC", "Noto Sans SC", "Droid Sans", sans-serif;
+  --md3-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --md3-elevation-2: 0 2px 8px rgba(0, 0, 0, 0.09), 0 6px 14px rgba(0, 0, 0, 0.07);
+  --md3-title-large: 1.375rem;
+  --md3-title-medium: 1rem;
+  --md3-body-large: 1rem;
+  --md3-body-medium: 0.875rem;
+  --md3-label-medium: 0.75rem;
+}
