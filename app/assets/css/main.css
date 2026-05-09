@@ -1,8 +1,11 @@
-@import './variables.css';
+@import "./variables.css";
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   width: 100%;
   height: 100%;
@@ -15,17 +18,28 @@ body {
   display: flex;
   justify-content: center;
   font-size: var(--md3-body-large);
-  background-image:
-    linear-gradient(180deg,
-      color-mix(in srgb, rgb(var(--mdui-color-primary-container)) 42%, rgb(var(--mdui-color-surface)) 58%) 0%,
-      rgb(var(--mdui-color-surface)) 46%,
-      rgb(var(--mdui-color-surface-container-low)) 100%);
+  background-image: linear-gradient(
+    180deg,
+    color-mix(
+        in srgb,
+        rgb(var(--mdui-color-primary-container)) 42%,
+        rgb(var(--mdui-color-surface)) 58%
+      )
+      0%,
+    rgb(var(--mdui-color-surface)) 46%,
+    rgb(var(--mdui-color-surface-container-low)) 100%
+  );
 }
 
-#app { width: 100%; height: 100%; }
+#app {
+  width: 100%;
+  height: 100%;
+}
 
 .material-symbols-outlined,
-.material-symbols-rounded { font-size: 20px; }
+.material-symbols-rounded {
+  font-size: 20px;
+}
 
 .block {
   padding: 16px;
@@ -47,13 +61,23 @@ body {
 }
 
 @keyframes rise-in {
-  from { transform: translateY(6px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes screen-off-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* WebView fallback — plain backgrounds when modern CSS unsupported */

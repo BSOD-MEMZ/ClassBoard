@@ -1,11 +1,13 @@
 <template>
   <mdui-fab class="power-fab" variant="secondary" @click="$emit('click')">
-    <span slot="icon" class="material-symbols-rounded icon-glyph">power_settings_new</span>
+    <span slot="icon" class="material-symbols-rounded icon-glyph"
+      >power_settings_new</span
+    >
   </mdui-fab>
 </template>
 
 <script setup lang="ts">
-defineEmits<{ click: [] }>()
+defineEmits<{ click: [] }>();
 </script>
 
 <style scoped>
