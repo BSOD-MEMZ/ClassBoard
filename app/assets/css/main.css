@@ -58,6 +58,11 @@ body {
   line-height: 1;
 }
 
+/* Ensure cards are visually distinct from page background (especially in dark mode) */
+mdui-card.block {
+  --mdui-color-surface-container-low: var(--mdui-color-surface-container);
+}
+
 @keyframes rise-in {
   from {
     transform: translateY(6px);
