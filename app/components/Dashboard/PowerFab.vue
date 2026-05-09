@@ -1,8 +1,6 @@
 <template>
   <mdui-fab class="power-fab" variant="secondary" @click="$emit('click')">
-    <span slot="icon" class="material-symbols-rounded icon-glyph"
-      >power_settings_new</span
-    >
+    <Icon slot="icon" name="material-symbols:power-settings-new" class="icon-glyph" />
   </mdui-fab>
 </template>
 

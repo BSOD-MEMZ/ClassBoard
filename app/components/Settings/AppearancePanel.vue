@@ -55,9 +55,7 @@
           :variant="isFullscreen ? 'filled' : 'outlined'"
           @click="$emit('toggle-fullscreen')"
         >
-          <span slot="icon" class="material-symbols-outlined">{{
-            isFullscreen ? "fullscreen_exit" : "fullscreen"
-          }}</span>
+          <Icon slot="icon" :name="`material-symbols:${isFullscreen ? 'fullscreen-exit' : 'fullscreen'}`" />
           {{ isFullscreen ? "退出全屏" : "全屏显示" }}
         </mdui-button>
       </div>

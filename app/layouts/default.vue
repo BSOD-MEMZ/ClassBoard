@@ -12,7 +12,7 @@
           :class="{ 'nav-back-btn--hidden': !showBack }"
           @click="handleBack"
         >
-          <span class="material-symbols-rounded icon-glyph">arrow_back</span>
+          <Icon name="material-symbols:arrow-back" class="icon-glyph" />
         </mdui-button-icon>
         <mdui-top-app-bar-title>{{ barTitle }}</mdui-top-app-bar-title>
       </mdui-top-app-bar>
@@ -25,39 +25,23 @@
         <mdui-navigation-bar :value="route.path" @change="onNavChange">
           <mdui-navigation-bar-item value="/"
             >主页
-            <span slot="icon" class="material-symbols-outlined nav-icon"
-              >home</span
-            >
-            <span slot="active-icon" class="material-symbols-rounded nav-icon"
-              >home</span
-            >
+            <Icon slot="icon" name="material-symbols:home" class="nav-icon" />
+            <Icon slot="active-icon" name="material-symbols:home" class="nav-icon" />
           </mdui-navigation-bar-item>
           <mdui-navigation-bar-item value="/apps"
             >应用
-            <span slot="icon" class="material-symbols-outlined nav-icon"
-              >apps</span
-            >
-            <span slot="active-icon" class="material-symbols-rounded nav-icon"
-              >apps</span
-            >
+            <Icon slot="icon" name="material-symbols:apps" class="nav-icon" />
+            <Icon slot="active-icon" name="material-symbols:apps" class="nav-icon" />
           </mdui-navigation-bar-item>
           <mdui-navigation-bar-item value="/settings"
             >设置
-            <span slot="icon" class="material-symbols-outlined nav-icon"
-              >settings</span
-            >
-            <span slot="active-icon" class="material-symbols-rounded nav-icon"
-              >settings</span
-            >
+            <Icon slot="icon" name="material-symbols:settings" class="nav-icon" />
+            <Icon slot="active-icon" name="material-symbols:settings" class="nav-icon" />
           </mdui-navigation-bar-item>
           <mdui-navigation-bar-item value="/about"
             >关于
-            <span slot="icon" class="material-symbols-outlined nav-icon"
-              >info</span
-            >
-            <span slot="active-icon" class="material-symbols-rounded nav-icon"
-              >info</span
-            >
+            <Icon slot="icon" name="material-symbols:info" class="nav-icon" />
+            <Icon slot="active-icon" name="material-symbols:info" class="nav-icon" />
           </mdui-navigation-bar-item>
         </mdui-navigation-bar>
       </footer>
@@ -124,10 +108,6 @@ useHead({
   ],
   link: [
     { rel: "icon", type: "image/png", href: "assets/xxtsoft.png" },
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&family=Material+Symbols+Rounded",
-    },
   ],
 });
 </script>

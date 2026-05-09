@@ -2,20 +2,19 @@
   <mdui-card class="block time-block">
     <div class="clock">{{ timeText }}</div>
     <div class="line">
-      <span class="material-symbols-outlined">calendar_month</span
-      ><span>{{ dateText }}</span>
+     <Icon name="material-symbols:calendar-month" /><span>{{ dateText }}</span>
     </div>
     <div v-if="weatherLoading" class="line">
-      <span class="material-symbols-outlined">partly_cloudy_day</span>
+     <Icon name="material-symbols:partly-cloudy-day" />
       <span class="skeleton-line"></span>
     </div>
     <div v-else-if="weatherVisible" class="line">
-      <span class="material-symbols-outlined">partly_cloudy_day</span
-      ><span>{{ weatherText }}</span>
+     <Icon name="material-symbols:partly-cloudy-day" />
+      <span>{{ weatherText }}</span>
     </div>
     <div v-else class="line unavailable">
-      <span class="material-symbols-outlined">cloud_off</span
-      ><span>不可用</span>
+     <Icon name="material-symbols:cloud-off" />
+      <span>不可用</span>
     </div>
   </mdui-card>
 </template>

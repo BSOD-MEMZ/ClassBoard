@@ -26,11 +26,11 @@
       <div class="section-label">CSES 课表 (YAML)</div>
       <div class="cses-actions">
         <mdui-button variant="outlined" @click="triggerFileUpload">
-          <mdui-icon slot="icon" name="file_upload"></mdui-icon>
+          <Icon slot="icon" name="material-symbols:upload-file" />
           上传文件
         </mdui-button>
         <mdui-button variant="outlined" @click="editDialogOpen = true">
-          <mdui-icon slot="icon" name="edit"></mdui-icon>
+          <Icon slot="icon" name="material-symbols:edit" />
           手动编辑
         </mdui-button>
       </div>
@@ -42,11 +42,11 @@
         @change="onFileSelected"
       />
       <div v-if="parseResult" class="cses-preview">
-        <mdui-icon
-          :name="previewOk ? 'check_circle' : 'error'"
+        <Icon
+          :name="`material-symbols:${previewOk ? 'check-circle' : 'error'}`"
           class="preview-icon"
           :class="{ 'preview-icon--error': !previewOk }"
-        ></mdui-icon>
+        />
         <span class="preview-text" :class="{ 'preview-text--error': !previewOk }">{{ previewLabel }}</span>
       </div>
     </div>

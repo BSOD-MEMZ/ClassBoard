@@ -2,7 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  modules: ['@nuxt/icon'],
   css: ['@/assets/css/main.css'],
+  icon: {
+    serverBundle: 'local',
+  },
   app: {
     head: {
       meta: [
@@ -10,7 +14,6 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: 'assets/xxtsoft.png' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Material+Icons&family=Material+Icons+Outlined&family=Material+Icons+Round' }
       ]
     }
   },

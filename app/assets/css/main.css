@@ -34,8 +34,8 @@ body {
   height: 100%;
 }
 
-.material-symbols-outlined,
-.material-symbols-rounded {
+
+.iconify {
   font-size: 20px;
 }
 

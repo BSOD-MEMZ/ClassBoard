@@ -11,14 +11,10 @@
         rounded
         @click="$emit('open-tool', tool)"
       >
-        <span slot="icon" class="material-symbols-outlined">{{
-          tool.icon
-        }}</span>
+        <Icon slot="icon" :name="`material-symbols:${tool.icon.replace(/_/g, '-')}`" />
         {{ tool.name }}
         <span slot="description">{{ tool.description }}</span>
-        <span slot="end-icon" class="material-symbols-outlined"
-          >open_in_new</span
-        >
+        <Icon slot="end-icon" name="material-symbols:open-in-new" />
       </mdui-list-item>
     </mdui-list>
   </mdui-card>

@@ -8,22 +8,16 @@
         rounded
         @click="$emit('select-section', item.key)"
       >
-        <span slot="icon" class="material-symbols-outlined">{{
-          item.icon
-        }}</span>
+        <Icon slot="icon" :name="`material-symbols:${item.icon.replace(/_/g, '-')}`" />
         {{ item.label }}
         <span slot="description">{{ item.description }}</span>
-        <span slot="end-icon" class="material-symbols-outlined"
-          >chevron_right</span
-        >
+        <Icon slot="end-icon" name="material-symbols:chevron-right" />
       </mdui-list-item>
       <mdui-list-item rounded @click="$emit('open-xxtsoft')">
-        <span slot="icon" class="material-symbols-outlined">cloud_sync</span>
+        <Icon slot="icon" name="material-symbols:cloud-sync" />
         连接到 xxtsoft
         <span slot="description">启用在线同步与公告分发能力</span>
-        <span slot="end-icon" class="material-symbols-outlined"
-          >open_in_new</span
-        >
+        <Icon slot="end-icon" name="material-symbols:open-in-new" />
       </mdui-list-item>
     </mdui-list>
   </mdui-card>
