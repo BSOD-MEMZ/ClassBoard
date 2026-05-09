@@ -7,36 +7,12 @@ export const defaultConfig: AppConfig = {
   classroomName: "未命名教室",
   themeMode: "auto",
   themeColor: "#2a5f9e",
-  scheduleMode: "simple",
-  classStart: "18:40",
-  classEnd: "20:20",
-  preClassProgressWindow: 10,
   weatherEnabled: true,
   weatherCity: "株洲",
   weatherLatitude: 27.83,
   weatherLongitude: 113.15,
   csesRaw: "",
-  csesFormat: "auto",
-  schedule: {
-    odd: {
-      "0": { course: "班会", teacher: "班主任" },
-      "1": { course: "数学拓展", teacher: "周老师" },
-      "2": { course: "英语听说", teacher: "李老师" },
-      "3": { course: "物理实验", teacher: "陈老师" },
-      "4": { course: "语文阅读", teacher: "王老师" },
-      "5": { course: "信息技术", teacher: "刘老师" },
-      "6": { course: "社团活动", teacher: "指导老师" },
-    },
-    even: {
-      "0": { course: "体育康复", teacher: "任课老师" },
-      "1": { course: "化学提升", teacher: "赵老师" },
-      "2": { course: "历史专题", teacher: "唐老师" },
-      "3": { course: "生物探究", teacher: "吴老师" },
-      "4": { course: "地理实践", teacher: "孙老师" },
-      "5": { course: "政治时评", teacher: "何老师" },
-      "6": { course: "心理成长", teacher: "辅导老师" },
-    },
-  },
+  schedule: {},
 };
 
 export const weatherCodeMap: Record<number, string> = {
@@ -72,11 +48,7 @@ export function normalizeConfig(parsed: Partial<AppConfig> | null): AppConfig {
     ...cloneDefault(),
     ...(parsed || {}),
     schedule: {
-      odd: { ...defaultConfig.schedule.odd, ...(parsed?.schedule?.odd || {}) },
-      even: {
-        ...defaultConfig.schedule.even,
-        ...(parsed?.schedule?.even || {}),
-      },
+      ...(parsed?.schedule || {}),
     },
   };
 }

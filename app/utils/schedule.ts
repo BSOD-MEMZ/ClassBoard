@@ -1,6 +1,4 @@
 import type {
-  SimpleSchedule,
-  SimpleClassEntry,
   Lesson,
   CsesParseResult,
   WeekType,
@@ -54,35 +52,6 @@ export function getIsoWeek(date: Date): number {
 
 export function getWeekType(date: Date): WeekType {
   return getIsoWeek(date) % 2 === 0 ? "even" : "odd";
-}
-
-export function getSimpleClassInfo(
-  schedule: SimpleSchedule,
-  date: Date,
-): SimpleClassEntry {
-  const weekType = getWeekType(date);
-  const day = date.getDay();
-  return schedule[weekType]?.[String(day)] || { course: "晚自习", teacher: "" };
-}
-
-export function validateSimpleSchedule(
-  schedule: unknown,
-): schedule is SimpleSchedule {
-  if (!schedule || typeof schedule !== "object") return false;
-  const s = schedule as Record<string, unknown>;
-  for (const wt of ["odd", "even"]) {
-    if (!s[wt] || typeof s[wt] !== "object") return false;
-    const weekObj = s[wt] as Record<string, unknown>;
-    for (let day = 0; day <= 6; day += 1) {
-      const e = (weekObj[String(day)] ?? weekObj[day]) as
-        | Record<string, unknown>
-        | undefined;
-      if (!e || typeof e !== "object") return false;
-      if (typeof e.course !== "string" || typeof e.teacher !== "string")
-        return false;
-    }
-  }
-  return true;
 }
 
 export function normalizeWeekType(input: unknown): WeekType {

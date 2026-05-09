@@ -1,11 +1,7 @@
 import type { AppConfig } from "@/types/config";
 import type { Lesson, ClassState } from "@/types/schedule";
 import {
-  parseTimeToMinutes,
-  normalizeClockText,
   formatDuration,
-  getWeekType,
-  getSimpleClassInfo,
   parseCsesLessons,
   lessonsForDate,
 } from "@/utils/schedule";
@@ -19,7 +15,7 @@ export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
   const parsedCses = computed(() => {
     return parseCsesLessons(
       config.value.csesRaw || "",
-      config.value.csesFormat || "auto",
+      "yaml",
     );
   });
 
@@ -29,61 +25,20 @@ export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
       current.getHours() * 60 +
       current.getMinutes() +
       current.getSeconds() / 60;
-    const preWindow = Number(config.value.preClassProgressWindow) || 10;
 
-    let lessonsToday: Array<{
-      day: number;
-      weekType: string;
-      start: string;
-      end: string;
-      startM: number;
-      endM: number;
-      course: string;
-      teacher: string;
-    }> = [];
-    let allLessons: Lesson[] = [];
-
-    if (config.value.scheduleMode === "cses") {
-      if (!parsedCses.value.ok) {
-        return {
-          statusText: parsedCses.value.error || "",
-          courseText: "-",
-          teacherText: "",
-          showProgress: false,
-          progress: 0,
-          progressNote: "",
-        };
-      }
-      allLessons = parsedCses.value.lessons;
-      lessonsToday = lessonsForDate(allLessons, current);
-    } else {
-      const startM = parseTimeToMinutes(config.value.classStart);
-      const endM = parseTimeToMinutes(config.value.classEnd);
-      if (startM === null || endM === null || endM <= startM) {
-        return {
-          statusText: "设置中的上课/下课时间无效",
-          courseText: "-",
-          teacherText: "",
-          showProgress: false,
-          progress: 0,
-          progressNote: "",
-        };
-      }
-      const info = getSimpleClassInfo(config.value.schedule, current);
-      lessonsToday = [
-        {
-          day: current.getDay(),
-          weekType: getWeekType(current),
-          start: config.value.classStart,
-          end: config.value.classEnd,
-          startM,
-          endM,
-          course: info.course,
-          teacher: info.teacher,
-        },
-      ];
-      allLessons = [];
+    if (!parsedCses.value.ok) {
+      return {
+        statusText: parsedCses.value.error || "",
+        courseText: "-",
+        teacherText: "",
+        showProgress: false,
+        progress: 0,
+        progressNote: "",
+      };
     }
+
+    const allLessons = parsedCses.value.lessons;
+    const lessonsToday = lessonsForDate(allLessons, current);
 
     for (const lesson of lessonsToday) {
       if (currentM >= lesson.startM && currentM < lesson.endM) {
@@ -115,9 +70,18 @@ export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
       const remain = startDate.getTime() - current.getTime();
       const remainMin = remain / 60000;
       const remainSec = Math.max(0, Math.ceil(remain / 1000));
-      const show = remainMin <= preWindow;
+
+      // Dynamic pre-class window: gap between consecutive lessons, capped at 60 min
+      const prevEnds = lessonsToday
+        .filter((x) => x.endM <= currentM)
+        .map((x) => x.endM);
+      const gap = prevEnds.length > 0
+        ? nextToday.startM - Math.max(...prevEnds)
+        : remainMin;
+      const windowMins = Math.min(gap, 60);
+      const show = remainMin <= windowMins;
       const p = show
-        ? Math.max(0, Math.min(1, (preWindow - remainMin) / preWindow))
+        ? Math.max(0, Math.min(1, (windowMins - remainMin) / windowMins))
         : 0;
       return {
         statusText: show ? "" : `下一节课 ${nextToday.start}-${nextToday.end}`,
@@ -133,32 +97,7 @@ export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
     for (let i = 1; i <= 14; i += 1) {
       const d = new Date(scanBase);
       d.setDate(d.getDate() + i);
-      let targetLessons: Array<{
-        startM: number;
-        endM: number;
-        start: string;
-        end: string;
-        course: string;
-        teacher: string;
-      }> = [];
-      if (config.value.scheduleMode === "cses") {
-        targetLessons = lessonsForDate(allLessons, d);
-      } else {
-        const startM = parseTimeToMinutes(config.value.classStart);
-        const endM = parseTimeToMinutes(config.value.classEnd);
-        const info = getSimpleClassInfo(config.value.schedule, d);
-        if (startM === null || endM === null || endM <= startM) continue;
-        targetLessons = [
-          {
-            startM,
-            endM,
-            start: config.value.classStart,
-            end: config.value.classEnd,
-            course: info.course,
-            teacher: info.teacher,
-          },
-        ];
-      }
+      const targetLessons = lessonsForDate(allLessons, d);
       if (targetLessons.length) {
         const first = targetLessons[0];
         const startDate = new Date(d);
@@ -190,27 +129,8 @@ export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
   });
 
   const todayLessons = computed<Lesson[]>(() => {
-    const current = now.value;
-    if (config.value.scheduleMode === "cses") {
-      if (!parsedCses.value.ok) return [];
-      return lessonsForDate(parsedCses.value.lessons, current);
-    }
-    const startM = parseTimeToMinutes(config.value.classStart);
-    const endM = parseTimeToMinutes(config.value.classEnd);
-    if (startM === null || endM === null || endM <= startM) return [];
-    const info = getSimpleClassInfo(config.value.schedule, current);
-    return [
-      {
-        day: current.getDay(),
-        weekType: getWeekType(current),
-        start: normalizeClockText(config.value.classStart),
-        end: normalizeClockText(config.value.classEnd),
-        startM,
-        endM,
-        course: info.course,
-        teacher: info.teacher,
-      },
-    ];
+    if (!parsedCses.value.ok) return [];
+    return lessonsForDate(parsedCses.value.lessons, now.value);
   });
 
   return { classState, todayLessons, parsedCses };

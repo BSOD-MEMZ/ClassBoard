@@ -1,15 +1,5 @@
 export type WeekType = "odd" | "even" | "all";
 
-export interface SimpleClassEntry {
-  course: string;
-  teacher: string;
-}
-
-export interface SimpleSchedule {
-  odd: Record<string, SimpleClassEntry>;
-  even: Record<string, SimpleClassEntry>;
-}
-
 export interface Lesson {
   day: number;
   weekType: WeekType;
