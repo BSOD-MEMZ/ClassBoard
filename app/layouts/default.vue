@@ -131,12 +131,13 @@ useHead({
 
 <style scoped>
 .app-shell {
-  width: min(100%, 920px);
+  width: min(100%, 800px);
+  min-width: 0;
   height: 100vh;
   margin: 0 auto;
   padding: 12px 4px 0;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 10px;
@@ -172,6 +173,9 @@ useHead({
 }
 
 .page-body {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding-top: 66px;
   padding-bottom: calc(92px + env(safe-area-inset-bottom));

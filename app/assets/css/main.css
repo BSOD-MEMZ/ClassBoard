@@ -15,8 +15,6 @@ body {
 }
 
 body {
-  display: flex;
-  justify-content: center;
   font-size: var(--md3-body-large);
   background-image: linear-gradient(
     180deg,
