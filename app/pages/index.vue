@@ -10,6 +10,7 @@
         :date-text="dateText"
         :weather-text="weatherText"
         :weather-visible="weatherVisible"
+        :weather-loading="weatherLoading"
       />
       <ClassStatusCard
         :class-state="classState"
@@ -44,7 +45,7 @@ const now = ref(new Date());
 const todayLessonsExpanded = ref(false);
 
 const { classState, todayLessons } = useSchedule(config, now);
-const { weatherText, weatherVisible, startWeatherTimer, stopWeatherTimer } =
+const { weatherText, weatherVisible, weatherLoading, startWeatherTimer, stopWeatherTimer } =
   useWeather();
 const { feedData, startFeedTimer, stopFeedTimer } = useFeed();
 const { applyTheme, setupMediaListener, cleanupMediaListener } =

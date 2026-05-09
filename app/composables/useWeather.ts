@@ -16,6 +16,7 @@ interface CitySearchResponse {
 export function useWeather() {
   const weatherText = ref("");
   const weatherVisible = ref(false);
+  const weatherLoading = ref(true);
   const cityQuery = ref("");
   const cityResults = ref<CityResult[]>([]);
   const cityLoading = ref(false);
@@ -30,22 +31,27 @@ export function useWeather() {
   ): Promise<void> {
     if (import.meta.server) return;
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      weatherLoading.value = false;
       weatherVisible.value = false;
       return;
     }
+    weatherLoading.value = true;
     try {
       const data = await $fetch<WeatherApiResponse>("/api/weather", {
         query: { lat, lon },
       });
       const current = data?.current;
       if (!current) {
+        weatherLoading.value = false;
         weatherVisible.value = false;
         return;
       }
       const weather = weatherCodeMap[current.weather_code] || "未知天气";
       weatherText.value = `${cityName || "当前城市"} ${weather} ${Math.round(current.temperature_2m)}°C  风速${Math.round(current.wind_speed_10m)}km/h`;
+      weatherLoading.value = false;
       weatherVisible.value = true;
     } catch {
+      weatherLoading.value = false;
       weatherVisible.value = false;
     }
   }
@@ -104,6 +110,7 @@ export function useWeather() {
     if (import.meta.server) return;
     if (weatherTimer) clearInterval(weatherTimer);
     if (!enabled) {
+      weatherLoading.value = false;
       weatherVisible.value = false;
       return;
     }
@@ -128,6 +135,7 @@ export function useWeather() {
   return {
     weatherText,
     weatherVisible,
+    weatherLoading,
     cityQuery,
     cityResults,
     cityLoading,
