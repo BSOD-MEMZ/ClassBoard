@@ -21,7 +21,6 @@
         @toggle-lessons="toggleTodayLessons"
       />
       <FeedCard :feed-data="feedData" />
-      <PowerFab @click="powerOffScreen" />
     </section>
   </ClientOnly>
 </template>
@@ -31,7 +30,6 @@ import SchoolCard from "@/components/Dashboard/SchoolCard.vue";
 import TimeCard from "@/components/Dashboard/TimeCard.vue";
 import ClassStatusCard from "@/components/Dashboard/ClassStatusCard.vue";
 import FeedCard from "@/components/Dashboard/FeedCard.vue";
-import PowerFab from "@/components/Dashboard/PowerFab.vue";
 import { loadConfig } from "@/composables/useConfig";
 import { useSchedule } from "@/composables/useSchedule";
 import { useWeather } from "@/composables/useWeather";
@@ -49,13 +47,8 @@ const { classState, todayLessons } = useSchedule(config, now);
 const { weatherText, weatherVisible, startWeatherTimer, stopWeatherTimer } =
   useWeather();
 const { feedData, startFeedTimer, stopFeedTimer } = useFeed();
-const {
-  applyTheme,
-  setupMediaListener,
-  cleanupMediaListener,
-  powerOffScreen,
-  wakeScreen,
-} = useDisplay();
+const { applyTheme, setupMediaListener, cleanupMediaListener } =
+  useDisplay();
 
 const timeText = computed(() => {
   const d = now.value;

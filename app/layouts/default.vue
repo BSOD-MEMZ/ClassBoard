@@ -62,6 +62,8 @@
         </mdui-navigation-bar>
       </footer>
 
+      <PowerFab @click="powerOffScreen" />
+
       <div
         v-if="screenOff"
         class="screen-off-overlay"
@@ -74,11 +76,12 @@
 <script setup lang="ts">
 import { useDisplay } from "@/composables/useDisplay";
 import { useApps } from "@/composables/useApps";
+import PowerFab from "@/components/Dashboard/PowerFab.vue";
 
 const route = useRoute();
 const router = useRouter();
 
-const { screenOff, wakeScreen } = useDisplay();
+const { screenOff, wakeScreen, powerOffScreen } = useDisplay();
 const { appsView, closeAppTool, activeApp } = useApps();
 
 const showBack = computed(() => {
