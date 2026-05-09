@@ -38,7 +38,6 @@ defineEmits<{ 'update:modelValue': [value: WeatherDraft]; 'update:city-query': [
 </script>
 
 <style scoped>
-.block-title { font-size: var(--md3-title-large); line-height: 3rem; font-weight: 500; color: rgb(var(--mdui-color-on-surface)); }
 .form-grid { display: grid; gap: 10px; margin-top: 10px; }
 .switch-row { display: flex; justify-content: space-between; align-items: center; min-height: 44px; color: rgb(var(--mdui-color-on-surface-variant)); }
 .split-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

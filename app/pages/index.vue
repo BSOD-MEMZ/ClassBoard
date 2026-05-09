@@ -88,5 +88,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.view { display: grid; gap: 12px; animation: rise-in 180ms ease; }
+.view { min-width: 8rem; display: grid; gap: 12px; animation: rise-in 180ms ease; }
 </style>

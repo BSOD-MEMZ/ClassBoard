@@ -25,6 +25,5 @@ defineEmits<{ 'select-section': [key: string]; 'open-xxtsoft': [] }>()
 </script>
 
 <style scoped>
-.block-title { font-size: var(--md3-title-large); line-height: 3rem; font-weight: 500; color: rgb(var(--mdui-color-on-surface)); }
-.settings-category-list { margin-top: 10px; }
+.settings-category-list { margin-top: 10px; margin-inline: -16px; }
 </style>

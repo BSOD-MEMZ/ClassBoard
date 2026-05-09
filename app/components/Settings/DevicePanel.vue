@@ -50,8 +50,7 @@ defineEmits<{ 'model-tap': [] }>()
 </script>
 
 <style scoped>
-.block-title { font-size: var(--md3-title-large); line-height: 3rem; font-weight: 500; color: rgb(var(--mdui-color-on-surface)); }
-.device-list { margin-top: 8px; }
+.device-list { margin-top: 8px; margin-inline: -16px; }
 .device-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; line-height: 1.7; }
 .device-value { color: rgb(var(--mdui-color-on-surface-variant)); }
 </style>

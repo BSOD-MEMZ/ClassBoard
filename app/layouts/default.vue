@@ -88,7 +88,7 @@ useHead({
   width: min(100%, 920px);
   height: 100vh;
   margin: 0 auto;
-  padding: 12px 12px 0;
+  padding: 12px 4px 0;
   position: relative;
   overflow: visible;
   display: grid;

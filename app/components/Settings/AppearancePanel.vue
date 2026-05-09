@@ -32,7 +32,6 @@ defineEmits<{ 'update:modelValue': [value: AppearanceDraft]; 'toggle-fullscreen'
 </script>
 
 <style scoped>
-.block-title { font-size: var(--md3-title-large); line-height: 3rem; font-weight: 500; color: rgb(var(--mdui-color-on-surface)); }
 .form-grid { display: grid; gap: 10px; margin-top: 10px; }
 .mode-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .color-row { display: grid; gap: 8px; }

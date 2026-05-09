@@ -13,6 +13,5 @@ defineEmits<{ 'export-settings': []; 'reset-settings': [] }>()
 </script>
 
 <style scoped>
-.block-title { font-size: var(--md3-title-large); line-height: 3rem; font-weight: 500; color: rgb(var(--mdui-color-on-surface)); }
 .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
 </style>

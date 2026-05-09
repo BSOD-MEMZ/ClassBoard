@@ -20,7 +20,6 @@ defineEmits<{ 'open-tool': [tool: AppTool] }>()
 </script>
 
 <style scoped>
-.block-title { font-size: var(--md3-title-large); line-height: 3rem; font-weight: 500; color: rgb(var(--mdui-color-on-surface)); }
 .tip { margin-top: 8px; line-height: 1.45; color: rgb(var(--mdui-color-on-surface-variant)); font-size: var(--md3-body-medium); }
-.apps-list { margin-top: 10px; }
+.apps-list { margin-top: 10px; margin-inline: -16px; }
 </style>

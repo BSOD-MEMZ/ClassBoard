@@ -44,7 +44,6 @@ defineEmits<{
 </script>
 
 <style scoped>
-.block-title { font-size: var(--md3-title-large); line-height: 3rem; font-weight: 500; color: rgb(var(--mdui-color-on-surface)); }
 .status { margin-top: 6px; font-size: var(--md3-body-medium); color: rgb(var(--mdui-color-on-surface-variant)); }
 .course { margin-top: 10px; font-size: clamp(1.5rem, 6.3vw, 2rem); line-height: 1.2; font-weight: 700; color: rgb(var(--mdui-color-primary)) !important; }
 .teacher { margin-top: 4px; font-size: var(--md3-body-medium); color: rgb(var(--mdui-color-on-surface-variant)); }
