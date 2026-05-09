@@ -234,7 +234,7 @@ function normalizeFeedPayload(payload) {
 }
 
 // ---- Feed URLs ----
-const FEED_URL = 'https://xxtsoft.top/support/ClassBoard/feed.json'
+const FEED_URL = 'https://xxtsoft.top/support/classboard/feed.json'
 const FEED_PROXY_URLS = [
   FEED_URL,
   `https://api.allorigins.win/raw?url=${encodeURIComponent(FEED_URL)}`,
