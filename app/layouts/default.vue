@@ -8,8 +8,8 @@
         scroll-target=".page-body"
       >
         <mdui-button-icon
-          v-if="showBack"
-          slot="navigationIcon"
+          class="nav-back-btn"
+          :class="{ 'nav-back-btn--hidden': !showBack }"
           @click="handleBack"
         >
           <span class="material-symbols-rounded icon-glyph">arrow_back</span>
@@ -170,6 +170,18 @@ useHead({
       rgb(var(--mdui-color-outline-variant)) 46%,
       transparent 54%
     );
+}
+
+.nav-back-btn {
+  transition:
+    opacity 250ms cubic-bezier(0.2, 0, 0, 1),
+    transform 250ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.nav-back-btn--hidden {
+  opacity: 0;
+  transform: translateX(12px);
+  pointer-events: none;
 }
 
 .page-body {

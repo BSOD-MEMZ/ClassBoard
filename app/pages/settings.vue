@@ -315,6 +315,20 @@ watch(
   (newPath) => {
     if (newPath === "/settings") {
       syncFromConfig();
+      const qs = route.query.section;
+      if (qs && typeof qs === "string" && sections.some((s) => s.key === qs)) {
+        section.value = qs;
+      } else {
+        section.value = "root";
+      }
+    }
+  },
+);
+
+watch(
+  () => route.query.section,
+  (qSection) => {
+    if (!qSection) {
       section.value = "root";
     }
   },
