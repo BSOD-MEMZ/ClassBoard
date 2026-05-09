@@ -1,7 +1,7 @@
 <template>
   <mdui-dialog :open="open" @close="$emit('close')" close-on-overlay-click close-on-esc>
     <div class="xxtsoft-dialog">
-      <img class="xxtsoft-logo" src="/assets/xxtsoft.png" alt="xxtsoft" />
+     <img class="xxtsoft-logo" src="assets/xxtsoft.png" alt="xxtsoft" />
       <div class="xxtsoft-title">连接到 xxtsoft</div>
       <div class="xxtsoft-desc">连接后可使用我们提供的在线服务，包括资讯下发、统一配置同步与远程维护支持。</div>
     </div>
