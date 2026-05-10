@@ -3,7 +3,10 @@
     <div slot="header" class="block-title">天气</div>
     <div slot="content" class="form-grid">
       <div class="switch-row">
-        <span>启用天气</span>
+        <span>
+          <Icon name="material-symbols:partly-cloudy-day-outline" class="label-icon" />
+          启用天气
+        </span>
         <m3e-switch
           icons="both"
           :checked="modelValue.weatherEnabled"
@@ -139,6 +142,17 @@ defineEmits<{
   align-items: center;
   min-height: 44px;
   color: var(--md-sys-color-on-surface-variant);
+}
+
+.switch-row span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label-icon {
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
 .split-2 {

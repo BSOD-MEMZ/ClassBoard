@@ -2,127 +2,316 @@
   <m3e-card class="block settings-block" variant="elevated">
     <div slot="header" class="block-title">外观</div>
     <div slot="content" class="form-grid">
+
+      <!-- 主题模式 -->
       <m3e-button-group variant="connected">
         <m3e-button
           :variant="modelValue.themeMode === 'light' ? 'filled' : 'tonal'"
-          @click="
-            $emit('update:modelValue', { ...modelValue, themeMode: 'light' })
-          "
-          >浅色</m3e-button
+          @click="$emit('update:modelValue', { ...modelValue, themeMode: 'light' })"
         >
+          <Icon slot="icon" name="material-symbols:light-mode" />
+          浅色
+        </m3e-button>
         <m3e-button
           :variant="modelValue.themeMode === 'dark' ? 'filled' : 'tonal'"
-          @click="
-            $emit('update:modelValue', { ...modelValue, themeMode: 'dark' })
-          "
-          >深色</m3e-button
+          @click="$emit('update:modelValue', { ...modelValue, themeMode: 'dark' })"
         >
+          <Icon slot="icon" name="material-symbols:dark-mode" />
+          深色
+        </m3e-button>
         <m3e-button
           :variant="modelValue.themeMode === 'auto' ? 'filled' : 'tonal'"
-          @click="
-            $emit('update:modelValue', { ...modelValue, themeMode: 'auto' })
-          "
-          >跟随系统</m3e-button
+          @click="$emit('update:modelValue', { ...modelValue, themeMode: 'auto' })"
         >
+          <Icon slot="icon" name="material-symbols:brightness-auto" />
+          跟随系统
+        </m3e-button>
       </m3e-button-group>
+
+      <!-- 主题色 -->
       <div class="color-row">
-        <label class="tiny-label" for="theme-color">主题色</label>
-        <input
-          id="theme-color"
-          class="color-input"
-          type="color"
-          :value="modelValue.themeColor"
-          @input="
-            $emit('update:modelValue', {
-              ...modelValue,
-              themeColor: $event.target.value,
-            })
-          "
-        />
-        <m3e-form-field>
-          <label slot="label" for="theme-hex">主题色 HEX</label>
+        <label class="tiny-label">
+          <Icon name="material-symbols:palette-outline" class="label-icon" />
+          主题色
+        </label>
+        <div class="color-pick-row">
+          <input
+            id="theme-color"
+            class="color-input"
+            type="color"
+            :value="modelValue.themeColor"
+            @input="$emit('update:modelValue', { ...modelValue, themeColor: ($event.target as HTMLInputElement).value })"
+          />
           <input
             id="theme-hex"
-            class="text-input"
+            class="text-input hex-input"
             :value="modelValue.themeColor"
-            @input="
-              $emit('update:modelValue', {
-                ...modelValue,
-                themeColor: ($event.target as HTMLInputElement).value,
-              })
-            "
+            @input="$emit('update:modelValue', { ...modelValue, themeColor: ($event.target as HTMLInputElement).value })"
           />
-        </m3e-form-field>
+        </div>
       </div>
-      <div class="actions">
-        <m3e-button
-          variant="elevated"
-          toggle
-          @click="$emit('toggle-fullscreen')"
-        >
-          <Icon
-            slot="icon"
-            :name="`material-symbols:${isFullscreen ? 'fullscreen-exit' : 'fullscreen'}`"
+
+      <!-- 小组件透明度 -->
+      <div class="slider-row">
+        <label class="tiny-label">
+          <Icon name="material-symbols:opacity" class="label-icon" />
+          小组件透明度
+        </label>
+        <div class="slider-wrap">
+          <input
+            type="range"
+            class="opacity-slider"
+            min="15"
+            max="100"
+            :value="Math.round(modelValue.widgetOpacity * 100)"
+            @input="$emit('update:modelValue', { ...modelValue, widgetOpacity: Number(($event.target as HTMLInputElement).value) / 100 })"
           />
+          <span class="slider-val">{{ Math.round(modelValue.widgetOpacity * 100) }}%</span>
+        </div>
+      </div>
+
+      <!-- 全屏按钮 -->
+      <div class="actions">
+        <m3e-button variant="elevated" toggle @click="$emit('toggle-fullscreen')">
+          <Icon slot="icon" :name="`material-symbols:${isFullscreen ? 'fullscreen-exit' : 'fullscreen'}`" />
           {{ isFullscreen ? "退出全屏" : "全屏显示" }}
         </m3e-button>
       </div>
+
+      <!-- 导航栏样式 -->
+      <div class="section-divider">
+        <span class="section-title">导航栏</span>
+      </div>
+
+      <m3e-button-group variant="connected">
+        <m3e-button
+          :variant="modelValue.navStyle === 'fixed' ? 'filled' : 'tonal'"
+          @click="$emit('update:modelValue', { ...modelValue, navStyle: 'fixed' })"
+        >
+          <Icon slot="icon" name="material-symbols:tab" />
+          固定
+        </m3e-button>
+        <m3e-button
+          :variant="modelValue.navStyle === 'pill' ? 'filled' : 'tonal'"
+          @click="$emit('update:modelValue', { ...modelValue, navStyle: 'pill' })"
+        >
+          <Icon slot="icon" name="material-symbols:rounded-corner" />
+          胶囊浮动
+        </m3e-button>
+      </m3e-button-group>
+
+      <!-- 壁纸 -->
+      <div class="section-divider">
+        <span class="section-title">壁纸</span>
+      </div>
+
+      <div class="wallpaper-grid">
+        <div
+          class="wallpaper-item wallpaper-item--none"
+          :class="{ 'wallpaper-item--active': !modelValue.wallpaper }"
+          @click="$emit('update:modelValue', { ...modelValue, wallpaper: '' })"
+        >
+          <span class="wallpaper-label">无壁纸</span>
+        </div>
+        <div
+          v-for="wp in wallpapers"
+          :key="wp.name"
+          class="wallpaper-item"
+          :class="{ 'wallpaper-item--active': modelValue.wallpaper === wp.name }"
+          :style="{ backgroundImage: `url(${wp.url})` }"
+          :title="wp.name"
+          @click="selectWallpaper(wp.name)"
+        />
+      </div>
+
     </div>
   </m3e-card>
 </template>
 
 <script setup lang="ts">
+import { useWallpaper } from "@/composables/useWallpaper";
+
+const { wallpapers, wallpaperThemeColor } = useWallpaper();
+
 interface AppearanceDraft {
   themeMode: string;
   themeColor: string;
+  wallpaper: string;
+  widgetOpacity: number;
+  navStyle: string;
 }
-defineProps<{ modelValue: AppearanceDraft; isFullscreen: boolean }>();
-defineEmits<{
+const props = defineProps<{ modelValue: AppearanceDraft; isFullscreen: boolean }>();
+const emit = defineEmits<{
   "update:modelValue": [value: AppearanceDraft];
   "toggle-fullscreen": [];
 }>();
+
+function selectWallpaper(name: string): void {
+  const autoColor = wallpaperThemeColor(name);
+  emit("update:modelValue", {
+    ...props.modelValue,
+    wallpaper: name,
+    ...(autoColor ? { themeColor: autoColor } : {}),
+  });
+}
 </script>
 
 <style scoped>
 .form-grid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin-top: 10px;
 }
 
 .color-row {
   display: grid;
+  gap: 4px;
+}
+
+.color-pick-row {
+  display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .tiny-label {
   font-size: var(--md3-label-medium);
   letter-spacing: 0.02em;
   color: var(--md-sys-color-on-surface-variant);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.label-icon {
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .color-input {
-  width: 100%;
+  width: 42px;
   height: 38px;
-  border: 1px solid
-    color-mix(in srgb, var(--md-sys-color-outline) 35%, transparent 65%);
+  border: 1px solid color-mix(in srgb, var(--md-sys-color-outline) 35%, transparent 65%);
   border-radius: 10px;
   background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-.text-input {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
+.hex-input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container);
   color: var(--md-sys-color-on-surface);
   font: inherit;
-  padding: 4px 0;
+  font-size: var(--md3-body-medium);
+  outline: none;
+  transition: border-color 200ms ease;
 }
+
+.hex-input:focus {
+  border-color: var(--md-sys-color-primary);
+}
+
+/* Opacity slider */
+.slider-row {
+  display: grid;
+  gap: 4px;
+}
+
+.slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.opacity-slider {
+  flex: 1;
+  height: 6px;
+  accent-color: var(--md-sys-color-primary);
+  cursor: pointer;
+}
+
+.slider-val {
+  min-width: 38px;
+  text-align: right;
+  font-size: var(--md3-label-medium);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 .actions {
   display: flex;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 4px;
   flex-wrap: wrap;
+}
+
+/* Section divider */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.section-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: color-mix(in srgb, var(--md-sys-color-outline-variant) 36%, transparent 64%);
+}
+
+.section-title {
+  font-size: var(--md3-title-medium);
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Wallpaper grid */
+.wallpaper-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.wallpaper-item {
+  aspect-ratio: 9 / 16;
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: border-color 200ms ease, transform 150ms ease;
+  overflow: hidden;
+}
+
+.wallpaper-item:hover {
+  transform: scale(1.05);
+}
+
+.wallpaper-item--active {
+  border-color: var(--md-sys-color-primary);
+}
+
+.wallpaper-item--none {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-surface-container-highest) 72%,
+    transparent 28%
+  );
+  border: 2px dashed color-mix(in srgb, var(--md-sys-color-outline-variant) 48%, transparent 52%);
+}
+
+.wallpaper-label {
+  font-size: var(--md3-label-medium);
+  color: var(--md-sys-color-on-surface-variant);
 }
 </style>

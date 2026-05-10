@@ -23,14 +23,14 @@
         <slot />
       </main>
 
-      <footer class="bottom-nav">
+      <footer class="bottom-nav" :class="{ 'bottom-nav--pill': navStyle === 'pill' }">
         <m3e-nav-bar>
           <m3e-nav-item
             :selected="route.path === '/'"
             @click="router.push('/')"
           >
             主页
-            <Icon slot="icon" name="material-symbols:home" class="nav-icon" />
+            <Icon slot="icon" name="material-symbols:home-outline" class="nav-icon" />
             <Icon
               slot="selected-icon"
               name="material-symbols:home"
@@ -56,7 +56,7 @@
             设置
             <Icon
               slot="icon"
-              name="material-symbols:settings"
+              name="material-symbols:settings-outline"
               class="nav-icon"
             />
             <Icon
@@ -70,7 +70,7 @@
             @click="router.push('/about')"
           >
             关于
-            <Icon slot="icon" name="material-symbols:info" class="nav-icon" />
+            <Icon slot="icon" name="material-symbols:info-outline" class="nav-icon" />
             <Icon
               slot="selected-icon"
               name="material-symbols:info"
@@ -94,10 +94,21 @@
 <script setup lang="ts">
 import { useDisplay } from "@/composables/useDisplay";
 import { useApps } from "@/composables/useApps";
+import { loadConfig } from "@/composables/useConfig";
 import PowerFab from "@/components/Dashboard/PowerFab.vue";
 
 const route = useRoute();
 const router = useRouter();
+
+const cfg = ref(loadConfig());
+const navStyle = computed(() => cfg.value.navStyle || "fixed");
+
+// Apply nav style attribute to HTML for CSS targeting
+watch(navStyle, (style) => {
+  if (import.meta.client) {
+    document.documentElement.setAttribute("data-nav-style", style);
+  }
+}, { immediate: true });
 
 const { screenOff, wakeScreen, powerOffScreen } = useDisplay();
 const { appsView, closeAppTool, activeApp } = useApps();
@@ -201,6 +212,11 @@ useHead({
   -ms-overflow-style: none;
 }
 
+/* Pill navbar needs less bottom padding */
+html[data-nav-style="pill"] .page-body {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+
 .page-body::-webkit-scrollbar {
   width: 0;
   height: 0;
@@ -223,6 +239,34 @@ useHead({
   );
   backdrop-filter: blur(8px);
   padding: 2px 6px max(2px, env(safe-area-inset-bottom));
+}
+
+/* Pill / floating navbar */
+.bottom-nav--pill {
+  left: 50%;
+  right: auto;
+  bottom: 20px;
+  width: auto;
+  min-width: 260px;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+  border-radius: 28px;
+  border-top: none;
+  border: 1px solid
+    color-mix(in srgb, var(--md-sys-color-outline-variant) 28%, transparent 72%);
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-surface-container) 72%,
+    transparent 28%
+  );
+  box-shadow: 0px 2px 8px 1px rgba(0, 0, 0, 0.12),
+              0px 1px 3px 0px rgba(0, 0, 0, 0.08);
+  padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
+}
+
+.bottom-nav--pill m3e-nav-bar {
+  border-radius: 28px;
+  overflow: hidden;
 }
 
 .screen-off-overlay {

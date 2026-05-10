@@ -1,6 +1,37 @@
-import type { AppConfig } from "@/types/config";
+import type { AppConfig, RssPreset } from "@/types/config";
 
 export const STORAGE_KEY = "classboard_vue_m3e_config_v1";
+
+export const RSS_PRESETS: RssPreset[] = [
+  {
+    label: "中国新闻网 - 国内",
+    url: "https://www.chinanews.com.cn/rss/china.xml",
+  },
+  {
+    label: "中国新闻网 - 国际",
+    url: "https://www.chinanews.com.cn/rss/world.xml",
+  },
+  {
+    label: "中国新闻网 - 社会",
+    url: "https://www.chinanews.com.cn/rss/society.xml",
+  },
+  {
+    label: "中国新闻网 - 财经",
+    url: "https://www.chinanews.com.cn/rss/finance.xml",
+  },
+  {
+    label: "中国新闻网 - 体育",
+    url: "https://www.chinanews.com.cn/rss/sports.xml",
+  },
+  {
+    label: "新华网 - 要闻",
+    url: "https://www.news.cn/rss/politics/news_politics.xml",
+  },
+  {
+    label: "自定义",
+    url: "",
+  },
+];
 
 export const defaultConfig: AppConfig = {
   schoolName: "株洲市南方中学",
@@ -12,6 +43,11 @@ export const defaultConfig: AppConfig = {
   weatherLatitude: 27.83,
   weatherLongitude: 113.15,
   csesRaw: "",
+  wallpaper: "",
+  widgetOpacity: 1,
+  navStyle: "fixed",
+  rssEnabled: true,
+  rssUrl: "https://www.chinanews.com.cn/rss/china.xml",
 };
 
 export const weatherCodeMap: Record<number, string> = {

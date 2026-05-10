@@ -1,58 +1,81 @@
 <template>
   <ClientOnly>
     <section class="view view-settings">
-      <SettingsMenu
-        v-if="section === 'root'"
-        :sections="sections"
-        @select-section="openSection"
-        @open-xxtsoft="xxtsoftDialogOpen = true"
-      />
+      <Transition name="panel-right" appear>
+        <SettingsMenu
+          v-if="section === 'root'"
+          :sections="sections"
+          @select-section="openSection"
+          @open-xxtsoft="xxtsoftDialogOpen = true"
+        />
+      </Transition>
 
-      <AppearancePanel
-        v-if="section === 'appearance'"
-        :model-value="{
-          themeMode: draft.themeMode,
-          themeColor: draft.themeColor,
-        }"
-        :is-fullscreen="isFullscreen"
-        @update:model-value="updateAppearance"
-        @toggle-fullscreen="toggleFullscreen"
-      />
+      <Transition name="panel-right" appear>
+        <AppearancePanel
+          v-if="section === 'appearance'"
+          :model-value="{
+            themeMode: draft.themeMode,
+            themeColor: draft.themeColor,
+            wallpaper: draft.wallpaper,
+            widgetOpacity: draft.widgetOpacity,
+            navStyle: draft.navStyle,
+          }"
+          :is-fullscreen="isFullscreen"
+          @update:model-value="updateAppearance"
+          @toggle-fullscreen="toggleFullscreen"
+        />
+      </Transition>
 
-      <BasicPanel
-        v-if="section === 'basic'"
-        :model-value="basicDraft"
-        @update:model-value="updateBasic"
-      />
+      <Transition name="panel-right" appear>
+        <BasicPanel
+          v-if="section === 'basic'"
+          :model-value="basicDraft"
+          @update:model-value="updateBasic"
+        />
+      </Transition>
 
-      <WeatherPanel
-        v-if="section === 'weather'"
-        :model-value="{
-          weatherEnabled: draft.weatherEnabled,
-          weatherCity: draft.weatherCity,
-          weatherLatitude: draft.weatherLatitude,
-          weatherLongitude: draft.weatherLongitude,
-        }"
-        :city-query="cityQuery"
-        :city-results="cityResults"
-        :city-loading="cityLoading"
-        @update:model-value="updateWeather"
-        @update:city-query="cityQuery = $event"
-        @search-city="searchCity"
-        @use-city="useCity"
-      />
+      <Transition name="panel-right" appear>
+        <WeatherPanel
+          v-if="section === 'weather'"
+          :model-value="{
+            weatherEnabled: draft.weatherEnabled,
+            weatherCity: draft.weatherCity,
+            weatherLatitude: draft.weatherLatitude,
+            weatherLongitude: draft.weatherLongitude,
+          }"
+          :city-query="cityQuery"
+          :city-results="cityResults"
+          :city-loading="cityLoading"
+          @update:model-value="updateWeather"
+          @update:city-query="cityQuery = $event"
+          @search-city="searchCity"
+          @use-city="useCity"
+        />
+      </Transition>
 
-      <DevicePanel
-        v-if="section === 'device'"
-        :fake-dev-enabled="fakeDevEnabled"
-        @model-tap="onDeviceModelTap"
-      />
+      <Transition name="panel-right" appear>
+        <DevicePanel
+          v-if="section === 'device'"
+          :fake-dev-enabled="fakeDevEnabled"
+          @model-tap="onDeviceModelTap"
+        />
+      </Transition>
 
-      <DataPanel
-        v-if="section === 'data'"
-        @export-settings="exportSettingsJson"
-        @reset-settings="resetSettings"
-      />
+      <Transition name="panel-right" appear>
+        <RssPanel
+          v-if="section === 'rss'"
+          :model-value="rssDraft"
+          @update:model-value="updateRss"
+        />
+      </Transition>
+
+      <Transition name="panel-right" appear>
+        <DataPanel
+          v-if="section === 'data'"
+          @export-settings="exportSettingsJson"
+          @reset-settings="resetSettings"
+        />
+      </Transition>
 
       <XxtsoftDialog
         :open="xxtsoftDialogOpen"
@@ -78,6 +101,7 @@ import AppearancePanel from "@/components/Settings/AppearancePanel.vue";
 import BasicPanel from "@/components/Settings/BasicPanel.vue";
 import WeatherPanel from "@/components/Settings/WeatherPanel.vue";
 import DevicePanel from "@/components/Settings/DevicePanel.vue";
+import RssPanel from "@/components/Settings/RssPanel.vue";
 import DataPanel from "@/components/Settings/DataPanel.vue";
 import XxtsoftDialog from "@/components/Shared/XxtsoftDialog.vue";
 
@@ -106,7 +130,7 @@ const sections: SettingsSection[] = [
     key: "appearance",
     label: "显示",
     icon: "palette",
-    description: "深色主题、动态主题色",
+    description: "主题、透明度、壁纸",
     enabled: true,
   },
   {
@@ -121,6 +145,13 @@ const sections: SettingsSection[] = [
     label: "天气",
     icon: "partly_cloudy_day",
     description: "城市地理位置",
+    enabled: true,
+  },
+  {
+    key: "rss",
+    label: "RSS 订阅",
+    icon: "rss_feed",
+    description: "RSS 新闻源配置",
     enabled: true,
   },
   {
@@ -168,6 +199,11 @@ const draft = reactive({
   weatherLatitude: String(cfg.value.weatherLatitude),
   weatherLongitude: String(cfg.value.weatherLongitude),
   csesRaw: cfg.value.csesRaw || "",
+  wallpaper: cfg.value.wallpaper || "",
+  widgetOpacity: cfg.value.widgetOpacity ?? 1,
+  navStyle: cfg.value.navStyle || ("fixed" as AppConfig["navStyle"]),
+  rssEnabled: cfg.value.rssEnabled,
+  rssUrl: cfg.value.rssUrl || "",
 });
 
 function syncFromConfig() {
@@ -180,6 +216,11 @@ function syncFromConfig() {
   draft.weatherLatitude = String(cfg.value.weatherLatitude);
   draft.weatherLongitude = String(cfg.value.weatherLongitude);
   draft.csesRaw = cfg.value.csesRaw || "";
+  draft.wallpaper = cfg.value.wallpaper || "";
+  draft.widgetOpacity = cfg.value.widgetOpacity ?? 1;
+  draft.navStyle = cfg.value.navStyle || ("fixed" as AppConfig["navStyle"]);
+  draft.rssEnabled = cfg.value.rssEnabled;
+  draft.rssUrl = cfg.value.rssUrl || "";
   cityQuery.value = "";
   cityResults.value = [];
 }
@@ -190,9 +231,23 @@ const basicDraft = computed(() => ({
   csesRaw: draft.csesRaw,
 }));
 
-function updateAppearance(val: { themeMode: string; themeColor: string }) {
+const rssDraft = computed(() => ({
+  rssEnabled: draft.rssEnabled,
+  rssUrl: draft.rssUrl,
+}));
+
+function updateAppearance(val: {
+  themeMode: string;
+  themeColor: string;
+  wallpaper?: string;
+  widgetOpacity?: number;
+  navStyle?: string;
+}) {
   draft.themeMode = val.themeMode as AppConfig["themeMode"];
   draft.themeColor = val.themeColor;
+  if (val.wallpaper !== undefined) draft.wallpaper = val.wallpaper;
+  if (val.widgetOpacity !== undefined) draft.widgetOpacity = val.widgetOpacity;
+  if (val.navStyle !== undefined) draft.navStyle = val.navStyle as AppConfig["navStyle"];
 }
 
 function updateBasic(val: {
@@ -212,6 +267,10 @@ function updateWeather(val: {
   Object.assign(draft, val);
 }
 
+function updateRss(val: { rssEnabled: boolean; rssUrl: string }) {
+  Object.assign(draft, val);
+}
+
 function openSection(key: string) {
   section.value = key;
   router.replace({ query: { section: key } });
@@ -226,6 +285,11 @@ function applyDraftToConfig() {
   cfg.value.weatherEnabled = draft.weatherEnabled;
   cfg.value.weatherCity = draft.weatherCity.trim() || "当前城市";
   cfg.value.csesRaw = draft.csesRaw;
+  cfg.value.wallpaper = draft.wallpaper;
+  cfg.value.widgetOpacity = draft.widgetOpacity;
+  cfg.value.navStyle = draft.navStyle as AppConfig["navStyle"];
+  cfg.value.rssEnabled = draft.rssEnabled;
+  cfg.value.rssUrl = draft.rssUrl.trim() || defaultConfig.rssUrl;
 
   const lat = Number(draft.weatherLatitude);
   const lon = Number(draft.weatherLongitude);
@@ -236,6 +300,10 @@ function applyDraftToConfig() {
 
   saveConfig(cfg.value);
   applyTheme(cfg.value.themeMode, cfg.value.themeColor);
+  // Apply nav style
+  if (import.meta.client) {
+    document.documentElement.setAttribute("data-nav-style", cfg.value.navStyle || "fixed");
+  }
   scheduleWeatherRefresh(
     cfg.value.weatherLatitude,
     cfg.value.weatherLongitude,
@@ -350,7 +418,36 @@ onBeforeUnmount(() => {
 .view-settings {
   display: grid;
   gap: 12px;
-  animation: rise-in 180ms ease;
   padding-bottom: 120px;
+}
+
+/* Panel transition: slide in from right + fade */
+.panel-right-enter-active {
+  animation: panel-slide-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+.panel-right-leave-active {
+  animation: panel-slide-out 160ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes panel-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes panel-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
 }
 </style>
