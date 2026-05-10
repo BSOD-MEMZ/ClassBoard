@@ -17,6 +17,10 @@
         <Icon name="material-symbols:cloud-off" />
         <span>不可用</span>
       </div>
+      <div v-if="nowPlaying" class="line now-playing">
+        <Icon name="material-symbols:play-circle" />
+        <span>正在播放：{{ nowPlaying }}</span>
+      </div>
     </div>
   </m3e-card>
 </template>
@@ -28,6 +32,7 @@ defineProps<{
   weatherText: string;
   weatherVisible: boolean;
   weatherLoading: boolean;
+  nowPlaying: string;
 }>();
 </script>
 
@@ -51,5 +56,10 @@ defineProps<{
 
 .line.unavailable {
   opacity: 0.5;
+}
+
+.line.now-playing {
+  color: var(--md-sys-color-primary, #39c5bb);
+  font-weight: 500;
 }
 </style>

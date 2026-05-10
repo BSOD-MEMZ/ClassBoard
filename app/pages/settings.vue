@@ -77,6 +77,12 @@
         />
       </Transition>
 
+      <Transition name="panel-right" appear>
+        <DeveloperPanel
+          v-if="section === 'developer'"
+        />
+      </Transition>
+
       <XxtsoftDialog
         :open="xxtsoftDialogOpen"
         @close="xxtsoftDialogOpen = false"
@@ -103,6 +109,7 @@ import WeatherPanel from "@/components/Settings/WeatherPanel.vue";
 import DevicePanel from "@/components/Settings/DevicePanel.vue";
 import RssPanel from "@/components/Settings/RssPanel.vue";
 import DataPanel from "@/components/Settings/DataPanel.vue";
+import DeveloperPanel from "@/components/Settings/DeveloperPanel.vue";
 import XxtsoftDialog from "@/components/Shared/XxtsoftDialog.vue";
 
 const route = useRoute();
@@ -111,7 +118,18 @@ const router = useRouter();
 const section = ref<string>("root");
 const xxtsoftDialogOpen = ref(false);
 
-const sections: SettingsSection[] = [
+const cfg = ref<AppConfig>(loadConfig());
+const {
+  applyTheme,
+  toggleFullscreen,
+  isFullscreen,
+  fakeDevEnabled,
+  onDeviceModelTap,
+  setupMediaListener,
+  cleanupMediaListener,
+} = useDisplay();
+
+const sections = computed<SettingsSection[]>(() => [
   {
     key: "wlan",
     label: "WLAN",
@@ -159,7 +177,7 @@ const sections: SettingsSection[] = [
     label: "关于设备",
     icon: "memory",
     description: "设备信息与参数",
-    enabled: false,
+    enabled: true,
   },
   {
     key: "data",
@@ -168,18 +186,19 @@ const sections: SettingsSection[] = [
     description: "导出、恢复默认",
     enabled: true,
   },
-];
+  ...(fakeDevEnabled.value
+    ? [
+        {
+          key: "developer" as const,
+          label: "开发者选项",
+          icon: "code",
+          description: "调试与测试工具",
+          enabled: true,
+        },
+      ]
+    : []),
+]);
 
-const cfg = ref<AppConfig>(loadConfig());
-const {
-  applyTheme,
-  toggleFullscreen,
-  isFullscreen,
-  fakeDevEnabled,
-  onDeviceModelTap,
-  setupMediaListener,
-  cleanupMediaListener,
-} = useDisplay();
 const {
   cityQuery,
   cityResults,
@@ -366,7 +385,7 @@ watch(
     if (newPath === "/settings") {
       syncFromConfig();
       const qs = route.query.section;
-      if (qs && typeof qs === "string" && sections.some((s) => s.key === qs)) {
+      if (qs && typeof qs === "string" && sections.value.some((s) => s.key === qs)) {
         section.value = qs;
       } else {
         section.value = "root";
@@ -403,7 +422,7 @@ onMounted(() => {
   if (
     qSection &&
     typeof qSection === "string" &&
-    sections.some((s) => s.key === qSection)
+    sections.value.some((s) => s.key === qSection)
   ) {
     section.value = qSection;
   }

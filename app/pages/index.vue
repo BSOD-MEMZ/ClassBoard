@@ -11,6 +11,7 @@
         :weather-text="weatherText"
         :weather-visible="weatherVisible"
         :weather-loading="weatherLoading"
+        :now-playing="nowPlaying"
       />
       <ClassStatusCard
         :class-state="classState"
@@ -20,6 +21,7 @@
         :today-lessons-expanded="todayLessonsExpanded"
         @toggle-lessons="toggleTodayLessons"
       />
+      <VideoCard />
       <FeedCard :feed-data="feedData" />
       <RssCard :rss-data="rssData" />
     </section>
@@ -30,6 +32,7 @@
 import SchoolCard from "@/components/Dashboard/SchoolCard.vue";
 import TimeCard from "@/components/Dashboard/TimeCard.vue";
 import ClassStatusCard from "@/components/Dashboard/ClassStatusCard.vue";
+import VideoCard from "@/components/Dashboard/VideoCard.vue";
 import FeedCard from "@/components/Dashboard/FeedCard.vue";
 import RssCard from "@/components/Dashboard/RssCard.vue";
 import { loadConfig } from "@/composables/useConfig";
@@ -38,6 +41,7 @@ import { useWeather } from "@/composables/useWeather";
 import { useFeed } from "@/composables/useFeed";
 import { useRss } from "@/composables/useRss";
 import { useDisplay } from "@/composables/useDisplay";
+import { nowPlaying } from "@/composables/useNowPlaying";
 import { useWallpaper } from "@/composables/useWallpaper";
 import { dayLabels } from "@/utils/schedule";
 import type { Lesson } from "@/types/schedule";
@@ -112,7 +116,7 @@ function triggerRipple(): void {
     margin-top: ${-size / 2}px;
     left: 50%;
     top: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent 82%), transparent);
+    background: radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-primary, #39c5bb) 18%, transparent 82%), transparent);
     transform: scale(0);
     animation: class-ripple-in 600ms cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
   `;

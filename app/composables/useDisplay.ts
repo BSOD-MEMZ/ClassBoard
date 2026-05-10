@@ -88,7 +88,7 @@ export function useDisplay() {
   function onDeviceModelTap(): void {
     if (fakeDevEnabled.value) return;
     modelTapCount.value += 1;
-    const remain = 7 - modelTapCount.value;
+    const remain = 5 - modelTapCount.value;
     if (remain > 0) {
       if (!import.meta.server) alert(`现在只需要再执行 ${remain} 步操作即可进入开发者模式。`);
     } else {
