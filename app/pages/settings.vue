@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
     <section class="view view-settings">
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <SettingsMenu
           v-if="section === 'root'"
           :sections="sections"
@@ -10,7 +10,7 @@
         />
       </Transition>
 
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <AppearancePanel
           v-if="section === 'appearance'"
           :model-value="{
@@ -26,7 +26,7 @@
         />
       </Transition>
 
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <BasicPanel
           v-if="section === 'basic'"
           :model-value="basicDraft"
@@ -34,7 +34,7 @@
         />
       </Transition>
 
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <WeatherPanel
           v-if="section === 'weather'"
           :model-value="{
@@ -53,7 +53,7 @@
         />
       </Transition>
 
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <DevicePanel
           v-if="section === 'device'"
           :fake-dev-enabled="fakeDevEnabled"
@@ -61,7 +61,7 @@
         />
       </Transition>
 
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <RssPanel
           v-if="section === 'rss'"
           :model-value="rssDraft"
@@ -69,7 +69,7 @@
         />
       </Transition>
 
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <DataPanel
           v-if="section === 'data'"
           @export-settings="exportSettingsJson"
@@ -77,7 +77,7 @@
         />
       </Transition>
 
-      <Transition name="panel-right" appear>
+      <Transition :name="transitionName" appear>
         <DeveloperPanel
           v-if="section === 'developer'"
         />
@@ -116,7 +116,13 @@ const route = useRoute();
 const router = useRouter();
 
 const section = ref<string>("root");
+const prevSection = ref<string>("root");
+const slideDir = ref<"forward" | "back">("forward");
 const xxtsoftDialogOpen = ref(false);
+
+const transitionName = computed(() =>
+  slideDir.value === "forward" ? "slide-forward" : "slide-back",
+);
 
 const cfg = ref<AppConfig>(loadConfig());
 const {
@@ -291,6 +297,8 @@ function updateRss(val: { rssEnabled: boolean; rssUrl: string }) {
 }
 
 function openSection(key: string) {
+  prevSection.value = section.value;
+  slideDir.value = "forward";
   section.value = key;
   router.replace({ query: { section: key } });
 }
@@ -398,6 +406,8 @@ watch(
   () => route.query.section,
   (qSection) => {
     if (!qSection) {
+      prevSection.value = section.value;
+      slideDir.value = "back";
       section.value = "root";
     }
   },
@@ -440,33 +450,34 @@ onBeforeUnmount(() => {
   padding-bottom: 120px;
 }
 
-/* Panel transition: slide in from right + fade */
-.panel-right-enter-active {
-  animation: panel-slide-in 220ms cubic-bezier(0.2, 0, 0, 1) both;
+/* Panel transitions — horizontal slide (internal nav) */
+.slide-forward-enter-active {
+  animation: slide-fw-enter 300ms cubic-bezier(0.2, 0.0, 0.0, 1.0) both;
 }
-.panel-right-leave-active {
-  animation: panel-slide-out 160ms cubic-bezier(0.4, 0, 1, 1) both;
+.slide-forward-leave-active {
+  animation: slide-fw-leave 220ms cubic-bezier(0.4, 0.0, 1.0, 1.0) both;
 }
-
-@keyframes panel-slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(28px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.slide-back-enter-active {
+  animation: slide-bk-enter 300ms cubic-bezier(0.2, 0.0, 0.0, 1.0) both;
+}
+.slide-back-leave-active {
+  animation: slide-bk-leave 220ms cubic-bezier(0.4, 0.0, 1.0, 1.0) both;
 }
 
-@keyframes panel-slide-out {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-28px);
-  }
+@keyframes slide-fw-enter {
+  from { opacity: 0; transform: translateX(48px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-fw-leave {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-48px); }
+}
+@keyframes slide-bk-enter {
+  from { opacity: 0; transform: translateX(-48px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-bk-leave {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(48px); }
 }
 </style>

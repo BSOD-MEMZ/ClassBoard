@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block settings-block" variant="outlined">
+  <m3e-card class="block settings-block" variant="elevated">
     <div slot="header" class="block-title">班牌与课表</div>
     <div slot="content" class="form-grid">
       <m3e-form-field>

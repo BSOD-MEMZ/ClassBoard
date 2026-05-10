@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block settings-block" variant="outlined">
+  <m3e-card class="block settings-block" variant="elevated">
     <div slot="header" class="block-title">天气</div>
     <div slot="content" class="form-grid">
       <div class="switch-row">

@@ -99,29 +99,49 @@ function applyNavStyle(style: string): void {
 
 // Android-style ripple on class state change
 let prevClassStatus = "";
+
 function triggerRipple(): void {
   if (import.meta.server) return;
+
+  // Read theme primary color from :root, with fallback
+  let primary = getComputedStyle(document.documentElement)
+    .getPropertyValue("--md-sys-color-primary")
+    .trim();
+  if (!primary || primary.length < 4) primary = "#39c5bb";
+
   const ripple = document.createElement("div");
-  ripple.className = "class-ripple";
-  const size = Math.max(window.innerWidth, window.innerHeight) * 2;
+  const size = Math.max(window.innerWidth, window.innerHeight) * 3;
+
+  // Solid filled circle — much more visible than a radial gradient
   ripple.style.cssText = `
     position: fixed;
-    inset: 0;
     z-index: 9999;
     pointer-events: none;
     border-radius: 50%;
     width: ${size}px;
     height: ${size}px;
-    margin-left: ${-size / 2}px;
-    margin-top: ${-size / 2}px;
-    left: 50%;
-    top: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--md-sys-color-primary, #39c5bb) 18%, transparent 82%), transparent);
+    left: ${-size / 2}px;
+    bottom: ${-size / 2}px;
+    background: ${primary};
+    opacity: 0.38;
     transform: scale(0);
-    animation: class-ripple-in 600ms cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
   `;
   document.body.appendChild(ripple);
-  ripple.addEventListener("animationend", () => ripple.remove());
+
+  ripple
+    .animate(
+      [
+        { transform: "scale(0)", opacity: 0.45 },
+        { transform: "scale(0.3)", opacity: 0.28, offset: 0.3 },
+        { transform: "scale(1)", opacity: 0 },
+      ],
+      {
+        duration: 700,
+        easing: "cubic-bezier(0.0, 0.0, 0.2, 1)",
+        fill: "forwards",
+      },
+    )
+    .onfinish = () => ripple.remove();
 }
 
 watch(
@@ -187,6 +207,6 @@ onBeforeUnmount(() => {
 .view {
   display: grid;
   gap: 20px;
-  animation: rise-in 180ms ease;
+  animation: rise-in 280ms cubic-bezier(0.0, 0.0, 0.2, 1);
 }
 </style>

@@ -19,16 +19,25 @@
         ></video>
 
         <!-- Play overlay -->
-        <div v-if="!isPlaying" class="video-overlay" @click="togglePlay">
-          <m3e-button variant="filled" class="overlay-btn">
+        <div v-if="!isPlaying && !morphing" class="video-overlay" @click="togglePlay">
+          <m3e-button ref="overlayBtnRef" variant="filled" class="overlay-btn">
             <Icon slot="icon" name="material-symbols:play-arrow" />
             播放
           </m3e-button>
         </div>
 
+        <!-- Morph clone layer -->
+        <div v-if="morphing" class="video-morph-layer">
+          <div ref="morphCloneRef" class="morph-clone">
+            <Icon name="material-symbols:play-arrow" class="morph-icon" />
+            <span class="morph-label">播放</span>
+          </div>
+        </div>
+
         <!-- Controls bar -->
-        <div v-if="isPlaying" class="video-controls">
+        <div v-if="isPlaying || morphing" class="video-controls">
           <m3e-icon-button
+            ref="ctrlPlayBtnRef"
             variant="filled"
             class="ctrl-icon-btn"
             @click="togglePlay"
@@ -79,8 +88,12 @@ interface VideoEntry {
 
 const videoEl = ref<HTMLVideoElement | null>(null);
 const sliderRef = ref<HTMLElement | null>(null);
+const overlayBtnRef = ref<HTMLElement | null>(null);
+const ctrlPlayBtnRef = ref<HTMLElement | null>(null);
+const morphCloneRef = ref<HTMLElement | null>(null);
 const isPlaying = ref(false);
 const isPaused = ref(false);
+const morphing = ref(false);
 const currentTime = ref(0);
 const duration = ref(0);
 const sliderValue = ref(0);
@@ -114,10 +127,71 @@ function togglePlay(): void {
   const v = videoEl.value;
   if (!v) return;
   if (v.paused) {
+    if (!isPlaying.value) {
+      morphToControls(() => {
+        v!.play().catch(() => {});
+      });
+      return;
+    }
     v.play().catch(() => {});
   } else {
     v.pause();
   }
+}
+
+function morphToControls(onDone: () => void): void {
+  const overlay = overlayBtnRef.value;
+  const target = ctrlPlayBtnRef.value;
+  const clone = morphCloneRef.value;
+  if (!overlay || !target || !clone) { onDone(); return; }
+
+  const overlayRect = overlay.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const wrapper = overlay.closest(".video-wrapper") as HTMLElement | null;
+  const wrapperRect = wrapper?.getBoundingClientRect();
+  if (!wrapperRect) { onDone(); return; }
+
+  const startX = overlayRect.left - wrapperRect.left + overlayRect.width / 2;
+  const startY = overlayRect.top - wrapperRect.top + overlayRect.height / 2;
+  const endX = targetRect.left - wrapperRect.left + targetRect.width / 2;
+  const endY = targetRect.top - wrapperRect.top + targetRect.height / 2;
+
+  morphing.value = true;
+
+  nextTick(() => {
+    if (!clone) return;
+    const anim = clone.animate(
+      [
+        {
+          left: `${startX}px`,
+          top: `${startY}px`,
+          width: `${overlayRect.width}px`,
+          height: `${overlayRect.height}px`,
+          transform: "translate(-50%, -50%) scale(1)",
+          borderRadius: "20px",
+          opacity: 1,
+        },
+        {
+          left: `${endX}px`,
+          top: `${endY}px`,
+          width: `${targetRect.width}px`,
+          height: `${targetRect.height}px`,
+          transform: "translate(-50%, -50%) scale(1)",
+          borderRadius: "50%",
+          opacity: 0,
+        },
+      ],
+      {
+        duration: 350,
+        easing: "cubic-bezier(0.2, 0.0, 0.0, 1.0)",
+        fill: "forwards",
+      },
+    );
+    anim.onfinish = () => {
+      morphing.value = false;
+      onDone();
+    };
+  });
 }
 
 function onPlay(): void {
@@ -271,6 +345,37 @@ onBeforeUnmount(() => {
 
 .overlay-btn {
   pointer-events: none;
+}
+
+/* ---- morph layer ---- */
+.video-morph-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.morph-clone {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 20px;
+  background: var(--md-sys-color-primary, #39c5bb);
+  color: var(--md-sys-color-on-primary, #fff);
+  pointer-events: none;
+}
+
+.morph-icon {
+  font-size: 18px;
+}
+
+.morph-label {
+  white-space: nowrap;
 }
 
 /* ---- controls bar ---- */

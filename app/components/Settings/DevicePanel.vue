@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block settings-block" variant="outlined">
+  <m3e-card class="block settings-block" variant="elevated">
     <div slot="header" class="block-title">关于设备</div>
     <m3e-list slot="content" class="device-list">
       <m3e-list-item>

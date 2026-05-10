@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block settings-block" variant="outlined">
+  <m3e-card class="block settings-block" variant="elevated">
     <div slot="header" class="block-title">数据与维护</div>
     <div slot="actions" end>
       <m3e-button variant="outlined" @click="$emit('export-settings')"
