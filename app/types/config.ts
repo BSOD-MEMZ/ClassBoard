@@ -16,6 +16,7 @@ export interface AppConfig {
   weatherLatitude: number;
   weatherLongitude: number;
   csesRaw: string;
+  scheduleFile: string;
   wallpaper: string;
   widgetOpacity: number;
   navStyle: NavStyle;

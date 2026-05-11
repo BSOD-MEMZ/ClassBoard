@@ -32,6 +32,25 @@
       </m3e-form-field>
 
       <div class="section-label">CSES 课表 (YAML)</div>
+
+      <!-- 内置课表选择 -->
+      <div class="cses-actions">
+        <select
+          class="text-input schedule-select"
+          :value="scheduleFile"
+          @change="onScheduleSelect"
+        >
+          <option value="">-- 不使用课表 --</option>
+          <option
+            v-for="file in scheduleFiles"
+            :key="file.name"
+            :value="file.name"
+          >
+            {{ file.label }}
+          </option>
+        </select>
+      </div>
+
       <div class="cses-actions">
         <m3e-button variant="outlined" @click="triggerFileUpload">
           <Icon slot="icon" name="material-symbols:upload-file" />
@@ -98,13 +117,43 @@
 <script setup lang="ts">
 import { parseCsesLessons } from "@/utils/schedule";
 
+// 导入内置课表文件
+const scheduleModules = import.meta.glob<string>(
+  "@/assets/schedule/*.yml",
+  { eager: true, as: "raw" },
+);
+
+interface ScheduleFileEntry {
+  name: string;
+  label: string;
+  content: string;
+}
+
+const scheduleFiles = computed<ScheduleFileEntry[]>(() => {
+  return Object.entries(scheduleModules).map(([path, content]) => {
+    const name = path.replace(/^.*[\\/]/, "").replace(/\.yml$/, "");
+    return {
+      name,
+      label: `${name}.yml`,
+      content: String(content || ""),
+    };
+  });
+});
+
 interface BasicDraft {
   schoolName: string;
   classroomName: string;
   csesRaw: string;
+  scheduleFile?: string;
 }
-const props = defineProps<{ modelValue: BasicDraft }>();
-const emit = defineEmits<{ "update:modelValue": [value: BasicDraft] }>();
+const props = defineProps<{
+  modelValue: BasicDraft;
+  scheduleFile?: string;
+}>();
+const emit = defineEmits<{
+  "update:modelValue": [value: BasicDraft];
+  "update:scheduleFile": [value: string];
+}>();
 
 const editDialogOpen = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
@@ -125,6 +174,20 @@ const previewOk = computed(() => {
   if (!parseResult.value) return false;
   return parseResult.value.ok && !parseResult.value.warning;
 });
+
+function onScheduleSelect(event: Event) {
+  const target = event.target as HTMLSelectElement;
+  const fileName = target.value;
+  emit("update:scheduleFile", fileName);
+  if (!fileName) {
+    emit("update:modelValue", { ...props.modelValue, csesRaw: "" });
+    return;
+  }
+  const entry = scheduleFiles.value.find((f) => f.name === fileName);
+  if (entry) {
+    emit("update:modelValue", { ...props.modelValue, csesRaw: entry.content });
+  }
+}
 
 function triggerFileUpload() {
   fileInputRef.value?.click();
@@ -163,6 +226,23 @@ function onFileSelected(event: Event) {
 .cses-actions {
   display: flex;
   gap: 10px;
+}
+
+.schedule-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md3-body-medium, 14px);
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.schedule-select:focus {
+  border-color: var(--md-sys-color-primary);
 }
 
 .cses-preview {

@@ -141,25 +141,27 @@ function togglePlay(): void {
 
 function morphToControls(onDone: () => void): void {
   const overlay = overlayBtnRef.value;
-  const target = ctrlPlayBtnRef.value;
   const clone = morphCloneRef.value;
-  if (!overlay || !target || !clone) { onDone(); return; }
+  if (!overlay || !clone) { onDone(); return; }
 
   const overlayRect = overlay.getBoundingClientRect();
-  const targetRect = target.getBoundingClientRect();
   const wrapper = overlay.closest(".video-wrapper") as HTMLElement | null;
   const wrapperRect = wrapper?.getBoundingClientRect();
   if (!wrapperRect) { onDone(); return; }
 
   const startX = overlayRect.left - wrapperRect.left + overlayRect.width / 2;
   const startY = overlayRect.top - wrapperRect.top + overlayRect.height / 2;
-  const endX = targetRect.left - wrapperRect.left + targetRect.width / 2;
-  const endY = targetRect.top - wrapperRect.top + targetRect.height / 2;
 
   morphing.value = true;
 
   nextTick(() => {
-    if (!clone) return;
+    const target = ctrlPlayBtnRef.value;
+    if (!clone || !target) { morphing.value = false; onDone(); return; }
+
+    const targetRect = target.getBoundingClientRect();
+    const endX = targetRect.left - wrapperRect.left + targetRect.width / 2;
+    const endY = targetRect.top - wrapperRect.top + targetRect.height / 2;
+
     const anim = clone.animate(
       [
         {

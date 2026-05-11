@@ -43,6 +43,7 @@ export const defaultConfig: AppConfig = {
   weatherLatitude: 27.83,
   weatherLongitude: 113.15,
   csesRaw: "",
+  scheduleFile: "",
   wallpaper: "",
   widgetOpacity: 1,
   navStyle: "fixed",

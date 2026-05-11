@@ -30,7 +30,9 @@
         <BasicPanel
           v-if="section === 'basic'"
           :model-value="basicDraft"
+          :schedule-file="draft.scheduleFile"
           @update:model-value="updateBasic"
+          @update:schedule-file="draft.scheduleFile = $event"
         />
       </Transition>
 
@@ -224,6 +226,7 @@ const draft = reactive({
   weatherLatitude: String(cfg.value.weatherLatitude),
   weatherLongitude: String(cfg.value.weatherLongitude),
   csesRaw: cfg.value.csesRaw || "",
+  scheduleFile: cfg.value.scheduleFile || "",
   wallpaper: cfg.value.wallpaper || "",
   widgetOpacity: cfg.value.widgetOpacity ?? 1,
   navStyle: cfg.value.navStyle || ("fixed" as AppConfig["navStyle"]),
@@ -241,6 +244,7 @@ function syncFromConfig() {
   draft.weatherLatitude = String(cfg.value.weatherLatitude);
   draft.weatherLongitude = String(cfg.value.weatherLongitude);
   draft.csesRaw = cfg.value.csesRaw || "";
+  draft.scheduleFile = cfg.value.scheduleFile || "";
   draft.wallpaper = cfg.value.wallpaper || "";
   draft.widgetOpacity = cfg.value.widgetOpacity ?? 1;
   draft.navStyle = cfg.value.navStyle || ("fixed" as AppConfig["navStyle"]);
@@ -312,6 +316,7 @@ function applyDraftToConfig() {
   cfg.value.weatherEnabled = draft.weatherEnabled;
   cfg.value.weatherCity = draft.weatherCity.trim() || "当前城市";
   cfg.value.csesRaw = draft.csesRaw;
+  cfg.value.scheduleFile = draft.scheduleFile || "";
   cfg.value.wallpaper = draft.wallpaper;
   cfg.value.widgetOpacity = draft.widgetOpacity;
   cfg.value.navStyle = draft.navStyle as AppConfig["navStyle"];

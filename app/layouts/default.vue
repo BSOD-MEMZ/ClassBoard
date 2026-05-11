@@ -17,6 +17,21 @@
           <Icon name="material-symbols:arrow-back" class="icon-glyph" />
         </m3e-icon-button>
         <span slot="title">{{ barTitle }}</span>
+
+        <!-- 非首页时在标题栏右侧显示课程信息 -->
+        <div
+          v-if="isNotHome && scheduleInfo.text"
+          slot="trailing"
+          class="bar-schedule-info"
+        >
+          <span class="bar-schedule-chip" :class="scheduleInfo.chipClass">
+            <Icon
+              :name="scheduleInfo.icon"
+              class="bar-schedule-icon"
+            />
+            <span class="bar-schedule-label">{{ scheduleInfo.text }}</span>
+          </span>
+        </div>
       </m3e-app-bar>
 
       <main id="pageBody" class="page-body">
@@ -95,6 +110,7 @@
 import { useDisplay } from "@/composables/useDisplay";
 import { useApps } from "@/composables/useApps";
 import { loadConfig } from "@/composables/useConfig";
+import { useSchedule } from "@/composables/useSchedule";
 import PowerFab from "@/components/Dashboard/PowerFab.vue";
 
 const route = useRoute();
@@ -112,6 +128,106 @@ watch(navStyle, (style) => {
 
 const { screenOff, wakeScreen, powerOffScreen } = useDisplay();
 const { appsView, closeAppTool, activeApp } = useApps();
+
+// ---- Schedule info for app bar trailing slot ----
+const now = ref(new Date());
+const { todayLessons } = useSchedule(cfg, now);
+
+const isNotHome = computed(() => route.path !== "/");
+
+/** 紧凑格式化剩余时间（用于标题栏） */
+function compactRemain(ms: number): string {
+  if (ms <= 0) return "0秒";
+  const totalSec = Math.ceil(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}时${m}分`;
+  if (m > 0) return s > 0 ? `${m}分${s}秒` : `${m}分钟`;
+  return `${s}秒`;
+}
+
+interface ScheduleChipInfo {
+  text: string;
+  icon: string;
+  chipClass: string;
+}
+
+const scheduleInfo = computed<ScheduleChipInfo>(() => {
+  const current = now.value;
+  const currentM = current.getHours() * 60 + current.getMinutes() + current.getSeconds() / 60;
+
+  // 没有今日课程
+  if (!todayLessons.value.length) {
+    return { text: "", icon: "", chipClass: "" };
+  }
+
+  // 正在上课 — 从 todayLessons 精确计算剩余时间
+  const currentLesson = todayLessons.value.find(
+    (l) => currentM >= l.startM && currentM < l.endM,
+  );
+  if (currentLesson) {
+    const endDate = new Date(current);
+    endDate.setHours(
+      Math.floor(currentLesson.endM / 60),
+      currentLesson.endM % 60,
+      0,
+      0,
+    );
+    const remainMs = endDate.getTime() - current.getTime();
+    return {
+      text: `${currentLesson.course} 剩${compactRemain(Math.max(0, remainMs))}`,
+      icon: "material-symbols:school",
+      chipClass: "chip--in-class",
+    };
+  }
+
+  // 即将上课 — 下节课在 60 分钟内开始
+  const nextLesson = todayLessons.value.find((l) => l.startM > currentM);
+  if (nextLesson) {
+    const startDate = new Date(current);
+    startDate.setHours(
+      Math.floor(nextLesson.startM / 60),
+      nextLesson.startM % 60,
+      0,
+      0,
+    );
+    const remainMs = startDate.getTime() - current.getTime();
+    const remainMin = remainMs / 60000;
+
+    // 60分钟内有下节课 → 显示倒计时
+    if (remainMin <= 60) {
+      return {
+        text: `还有${compactRemain(Math.max(0, remainMs))}上${nextLesson.course}`,
+        icon: "material-symbols:notifications-active",
+        chipClass: "chip--upcoming",
+      };
+    }
+
+    // 较远的下一节
+    return {
+      text: `下节 ${nextLesson.course} ${nextLesson.start}`,
+      icon: "material-symbols:schedule",
+      chipClass: "chip--next",
+    };
+  }
+
+  return { text: "", icon: "", chipClass: "" };
+});
+
+let scheduleTimer: ReturnType<typeof setInterval> | null = null;
+
+onMounted(() => {
+  scheduleTimer = setInterval(() => {
+    now.value = new Date();
+  }, 1000);
+});
+
+onBeforeUnmount(() => {
+  if (scheduleTimer) clearInterval(scheduleTimer);
+});
+
+// ---- End schedule info ----
 
 const showBack = computed(() => {
   return (
@@ -199,6 +315,57 @@ useHead({
   opacity: 0;
   transform: translateX(12px);
   pointer-events: none;
+}
+
+/* ---- App bar schedule info chip ---- */
+.bar-schedule-info {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+}
+
+.bar-schedule-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 200ms ease, color 200ms ease;
+}
+
+.bar-schedule-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.bar-schedule-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 正在上课 — 温暖高亮 */
+.chip--in-class {
+  background: color-mix(in srgb, var(--md-sys-color-tertiary-container, #e8def8) 72%, transparent);
+  color: var(--md-sys-color-on-tertiary-container, #1d192b);
+}
+
+/* 即将上课 — 柔和提示 */
+.chip--upcoming {
+  background: color-mix(in srgb, var(--md-sys-color-secondary-container, #e8def8) 72%, transparent);
+  color: var(--md-sys-color-on-secondary-container, #1d192b);
+}
+
+/* 下一节（较远） — 标准色调 */
+.chip--next {
+  background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 72%, transparent);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .page-body {
