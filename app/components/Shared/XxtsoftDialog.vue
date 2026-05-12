@@ -1,10 +1,5 @@
 <template>
-  <mdui-dialog
-    :open="open"
-    @close="$emit('close')"
-    close-on-overlay-click
-    close-on-esc
-  >
+  <m3e-dialog :open="open" dismissible @closed="$emit('close')">
     <div class="xxtsoft-dialog">
       <img class="xxtsoft-logo" src="assets/xxtsoft.png" alt="xxtsoft" />
       <div class="xxtsoft-title">连接到 xxtsoft</div>
@@ -12,10 +7,10 @@
         连接后可使用我们提供的在线服务，包括资讯下发、统一配置同步与远程维护支持。
       </div>
     </div>
-    <mdui-button slot="action" variant="text" @click="$emit('close')"
-      >关闭</mdui-button
-    >
-  </mdui-dialog>
+    <div slot="actions" end>
+      <m3e-button variant="text" @click="$emit('close')">关闭</m3e-button>
+    </div>
+  </m3e-dialog>
 </template>
 
 <script setup lang="ts">
@@ -36,7 +31,7 @@ defineEmits<{ close: [] }>();
   border-radius: 14px;
   background: color-mix(
     in srgb,
-    rgb(var(--mdui-color-surface-container-high)) 80%,
+    var(--md-sys-color-surface-container-high) 80%,
     transparent 20%
   );
   padding: 8px;
@@ -46,13 +41,13 @@ defineEmits<{ close: [] }>();
   margin-top: 12px;
   font-size: var(--md3-title-medium);
   font-weight: 500;
-  color: rgb(var(--mdui-color-on-surface));
+  color: var(--md-sys-color-on-surface);
 }
 
 .xxtsoft-desc {
   margin-top: 8px;
   font-size: var(--md3-body-medium);
-  color: rgb(var(--mdui-color-on-surface-variant));
+  color: var(--md-sys-color-on-surface-variant);
   line-height: 1.5;
 }
 </style>

@@ -1,15 +1,15 @@
 <template>
-  <mdui-card class="block settings-block">
-    <div class="block-title">数据与维护</div>
-    <div class="actions">
-      <mdui-button variant="outlined" @click="$emit('export-settings')"
-        >导出设置 JSON</mdui-button
+  <m3e-card class="block settings-block" variant="outlined">
+    <div slot="header" class="block-title">数据与维护</div>
+    <div slot="actions" end>
+      <m3e-button variant="outlined" @click="$emit('export-settings')"
+        >导出设置 JSON</m3e-button
       >
-      <mdui-button variant="text" @click="$emit('reset-settings')"
-        >恢复默认</mdui-button
+      <m3e-button variant="text" @click="$emit('reset-settings')"
+        >恢复默认</m3e-button
       >
     </div>
-  </mdui-card>
+  </m3e-card>
 </template>
 
 <script setup lang="ts">

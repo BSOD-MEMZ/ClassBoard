@@ -18,7 +18,6 @@
         :today-lessons-visible="todayLessonsVisible"
         :has-more-today-lessons="hasMoreTodayLessons"
         :today-lessons-expanded="todayLessonsExpanded"
-        @show-lesson-detail="showLessonDetail"
         @toggle-lessons="toggleTodayLessons"
       />
       <FeedCard :feed-data="feedData" />
@@ -37,7 +36,6 @@ import { useWeather } from "@/composables/useWeather";
 import { useFeed } from "@/composables/useFeed";
 import { useDisplay } from "@/composables/useDisplay";
 import { dayLabels } from "@/utils/schedule";
-import { snackbar } from "mdui";
 import type { Lesson } from "@/types/schedule";
 
 const config = ref(loadConfig());
@@ -45,11 +43,15 @@ const now = ref(new Date());
 const todayLessonsExpanded = ref(false);
 
 const { classState, todayLessons } = useSchedule(config, now);
-const { weatherText, weatherVisible, weatherLoading, startWeatherTimer, stopWeatherTimer } =
-  useWeather();
+const {
+  weatherText,
+  weatherVisible,
+  weatherLoading,
+  startWeatherTimer,
+  stopWeatherTimer,
+} = useWeather();
 const { feedData, startFeedTimer, stopFeedTimer } = useFeed();
-const { applyTheme, setupMediaListener, cleanupMediaListener } =
-  useDisplay();
+const { applyTheme, setupMediaListener, cleanupMediaListener } = useDisplay();
 
 const timeText = computed(() => {
   const d = now.value;
@@ -70,18 +72,6 @@ const hasMoreTodayLessons = computed(() => todayLessons.value.length > 4);
 
 function toggleTodayLessons() {
   todayLessonsExpanded.value = !todayLessonsExpanded.value;
-}
-
-function showLessonDetail(lesson: Lesson) {
-  const course = String(lesson.course || "未命名课程");
-  const time = `${lesson.start || "--:--"}-${lesson.end || "--:--"}`;
-  const teacher = String(lesson.teacher || "").trim();
-  const teacherPart = teacher ? `｜任课老师：${teacher}` : "";
-  try {
-    snackbar({ message: `${course}｜${time}${teacherPart}` });
-  } catch {
-    alert(`${course}｜${time}${teacherPart}`);
-  }
 }
 
 let clockTimer: ReturnType<typeof setInterval> | null = null;

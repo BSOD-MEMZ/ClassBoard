@@ -1,8 +1,4 @@
-import type {
-  Lesson,
-  CsesParseResult,
-  WeekType,
-} from "@/types/schedule";
+import type { Lesson, CsesParseResult, WeekType } from "@/types/schedule";
 import { load } from "js-yaml";
 
 export function parseTimeToMinutes(timeText: string): number | null {
@@ -41,9 +37,7 @@ export function formatDuration(ms: number): string {
 }
 
 export function getIsoWeek(date: Date): number {
-  const d = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-  );
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
@@ -58,11 +52,9 @@ export function normalizeWeekType(input: unknown): WeekType {
   const val = String(input ?? "")
     .trim()
     .toLowerCase();
-  if (!val || val === "all" || val === "both" || val === "0" || val === "every")
-    return "all";
+  if (!val || val === "all" || val === "both" || val === "0" || val === "every") return "all";
   if (["odd", "single", "dan", "1", "单", "单周"].includes(val)) return "odd";
-  if (["even", "double", "shuang", "2", "双", "双周"].includes(val))
-    return "even";
+  if (["even", "double", "shuang", "2", "双", "双周"].includes(val)) return "even";
   return "all";
 }
 
@@ -91,14 +83,11 @@ interface CsesCycle {
   spans?: Array<{ activity?: string; count?: number }>;
 }
 
-export function buildWorkDayWeekdayMap(
-  cycle: CsesCycle | undefined,
-): Map<number, number> | null {
+export function buildWorkDayWeekdayMap(cycle: CsesCycle | undefined): Map<number, number> | null {
   if (!cycle || typeof cycle !== "object") return null;
   const workCount = Number(cycle.work_count);
   const spans = Array.isArray(cycle.spans) ? cycle.spans : [];
-  if (!Number.isInteger(workCount) || workCount < 1 || !spans.length)
-    return null;
+  if (!Number.isInteger(workCount) || workCount < 1 || !spans.length) return null;
   const map = new Map<number, number>();
   let weekday = 1;
   let workSeen = 0;
@@ -118,10 +107,7 @@ export function buildWorkDayWeekdayMap(
   return map.size ? map : null;
 }
 
-function pickFirst(
-  obj: Record<string, unknown> | undefined,
-  keys: string[],
-): string | undefined {
+function pickFirst(obj: Record<string, unknown> | undefined, keys: string[]): string | undefined {
   for (const key of keys) {
     const val = obj?.[key];
     if (val !== undefined && val !== null && val !== "") return String(val);
@@ -129,13 +115,9 @@ function pickFirst(
   return undefined;
 }
 
-export function parseCsesLessons(
-  rawText: string,
-  preferredFormat: "auto" | "yaml" | "json" = "auto",
-): CsesParseResult {
+export function parseCsesLessons(rawText: string, preferredFormat: "auto" | "yaml" | "json" = "auto"): CsesParseResult {
   const text = String(rawText || "").trim();
-  if (!text)
-    return { ok: true, lessons: [], warning: "未提供 CSES 内容，当前无课程。" };
+  if (!text) return { ok: true, lessons: [], warning: "未提供 CSES 内容，当前无课程。" };
 
   let root: Record<string, unknown> | undefined;
   const detectJson = text.startsWith("{") || text.startsWith("[");
@@ -150,10 +132,7 @@ export function parseCsesLessons(
 
   for (const fmt of parserPlan) {
     try {
-      root = (fmt === "json" ? JSON.parse(text) : load(text)) as Record<
-        string,
-        unknown
-      >;
+      root = (fmt === "json" ? JSON.parse(text) : load(text)) as Record<string, unknown>;
       if (root && typeof root === "object") break;
     } catch {
       /* try next parser */
@@ -168,11 +147,8 @@ export function parseCsesLessons(
   }
 
   const subjectMap = new Map<string, { course: string; teacher: string }>();
-  const subjects = Array.isArray(root?.subjects)
-    ? (root.subjects as Record<string, unknown>[])
-    : [];
-  const cycleConfig = (root?.configuration as Record<string, unknown>)
-    ?.cycle as CsesCycle | undefined;
+  const subjects = Array.isArray(root?.subjects) ? (root.subjects as Record<string, unknown>[]) : [];
+  const cycleConfig = (root?.configuration as Record<string, unknown>)?.cycle as CsesCycle | undefined;
   const workDayWeekdayMap = buildWorkDayWeekdayMap(cycleConfig);
 
   for (const s of subjects) {
@@ -180,8 +156,7 @@ export function parseCsesLessons(
     const short = pickFirst(s, ["simplified_name", "short_name"]);
     const teacher = String(pickFirst(s, ["teacher", "teacher_name"]) || "");
     if (name) subjectMap.set(String(name), { course: String(name), teacher });
-    if (short)
-      subjectMap.set(String(short), { course: String(name || short), teacher });
+    if (short) subjectMap.set(String(short), { course: String(name || short), teacher });
   }
 
   const lessons: Lesson[] = [];
@@ -196,8 +171,7 @@ export function parseCsesLessons(
     const dayN = normalizeDay(day);
     const startM = parseTimeToMinutes(String(start));
     const endM = parseTimeToMinutes(String(end));
-    if (dayN === null || startM === null || endM === null || endM <= startM)
-      return;
+    if (dayN === null || startM === null || endM === null || endM <= startM) return;
     lessons.push({
       day: dayN,
       weekType: normalizeWeekType(weekType),
@@ -217,12 +191,7 @@ export function parseCsesLessons(
         : [pickFirst(schedule, ["enable_day", "day", "weekday", "week_day"])];
       const days = rawDays.map((d: unknown) => {
         const n = Number(d);
-        if (
-          workDayWeekdayMap &&
-          Number.isInteger(n) &&
-          workDayWeekdayMap.has(n)
-        )
-          return workDayWeekdayMap.get(n);
+        if (workDayWeekdayMap && Number.isInteger(n) && workDayWeekdayMap.has(n)) return workDayWeekdayMap.get(n);
         if (workDayWeekdayMap && Number.isInteger(n) && n > 0) {
           const size = workDayWeekdayMap.size;
           const idx = ((n - 1) % size) + 1;
@@ -230,40 +199,17 @@ export function parseCsesLessons(
         }
         return d;
       });
-      const weekType =
-        pickFirst(schedule, [
-          "weeks",
-          "week_type",
-          "weekType",
-          "week",
-          "type",
-        ]) || "all";
-      const classes = Array.isArray(schedule?.classes)
-        ? (schedule.classes as Record<string, unknown>[])
-        : [];
+      const weekType = pickFirst(schedule, ["weeks", "week_type", "weekType", "week", "type"]) || "all";
+      const classes = Array.isArray(schedule?.classes) ? (schedule.classes as Record<string, unknown>[]) : [];
 
       for (const day of days) {
         for (const cls of classes) {
-          const subjectText = pickFirst(cls, [
-            "subject",
-            "name",
-            "course",
-            "title",
-          ]);
+          const subjectText = pickFirst(cls, ["subject", "name", "course", "title"]);
           const mapped = subjectMap.get(String(subjectText));
           const start = pickFirst(cls, ["start_time", "start", "startTime"]);
           const end = pickFirst(cls, ["end_time", "end", "endTime"]);
-          const teacher =
-            pickFirst(cls, ["teacher", "teacher_name", "instructor"]) ||
-            mapped?.teacher;
-          addLesson(
-            day,
-            weekType,
-            start,
-            end,
-            mapped?.course || subjectText,
-            teacher,
-          );
+          const teacher = pickFirst(cls, ["teacher", "teacher_name", "instructor"]) || mapped?.teacher;
+          addLesson(day, weekType, start, end, mapped?.course || subjectText, teacher);
         }
       }
     }
@@ -274,8 +220,7 @@ export function parseCsesLessons(
     return {
       ok: false,
       lessons: [],
-      error:
-        "未从 CSES 内容解析出课程。请检查 schedules.enable_day、classes.start_time、classes.end_time 等字段。",
+      error: "未从 CSES 内容解析出课程。请检查 schedules.enable_day、classes.start_time、classes.end_time 等字段。",
     };
   }
   return { ok: true, lessons };
@@ -288,17 +233,7 @@ export function isLessonInWeek(lesson: Lesson, weekType: WeekType): boolean {
 export function lessonsForDate(allLessons: Lesson[], date: Date): Lesson[] {
   const day = date.getDay();
   const weekType = getWeekType(date);
-  return allLessons
-    .filter((x) => x.day === day && isLessonInWeek(x, weekType))
-    .sort((a, b) => a.startM - b.startM);
+  return allLessons.filter((x) => x.day === day && isLessonInWeek(x, weekType)).sort((a, b) => a.startM - b.startM);
 }
 
-export const dayLabels = [
-  "星期日",
-  "星期一",
-  "星期二",
-  "星期三",
-  "星期四",
-  "星期五",
-  "星期六",
-];
+export const dayLabels = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];

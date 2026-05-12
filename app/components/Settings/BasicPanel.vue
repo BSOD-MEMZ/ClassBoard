@@ -1,38 +1,46 @@
 <template>
-  <mdui-card class="block settings-block">
-    <div class="block-title">班牌与课表</div>
-    <div class="form-grid">
-      <mdui-text-field
-        label="学校名称"
-        :value="modelValue.schoolName"
-        @input="
-          $emit('update:modelValue', {
-            ...modelValue,
-            schoolName: $event.target.value,
-          })
-        "
-      ></mdui-text-field>
-      <mdui-text-field
-        label="教室名称"
-        :value="modelValue.classroomName"
-        @input="
-          $emit('update:modelValue', {
-            ...modelValue,
-            classroomName: $event.target.value,
-          })
-        "
-      ></mdui-text-field>
+  <m3e-card class="block settings-block" variant="outlined">
+    <div slot="header" class="block-title">班牌与课表</div>
+    <div slot="content" class="form-grid">
+      <m3e-form-field>
+        <label slot="label" for="school-name">学校名称</label>
+        <input
+          id="school-name"
+          class="text-input"
+          :value="modelValue.schoolName"
+          @input="
+            $emit('update:modelValue', {
+              ...modelValue,
+              schoolName: ($event.target as HTMLInputElement).value,
+            })
+          "
+        />
+      </m3e-form-field>
+      <m3e-form-field>
+        <label slot="label" for="classroom-name">教室名称</label>
+        <input
+          id="classroom-name"
+          class="text-input"
+          :value="modelValue.classroomName"
+          @input="
+            $emit('update:modelValue', {
+              ...modelValue,
+              classroomName: ($event.target as HTMLInputElement).value,
+            })
+          "
+        />
+      </m3e-form-field>
 
       <div class="section-label">CSES 课表 (YAML)</div>
       <div class="cses-actions">
-        <mdui-button variant="outlined" @click="triggerFileUpload">
+        <m3e-button variant="outlined" @click="triggerFileUpload">
           <Icon slot="icon" name="material-symbols:upload-file" />
           上传文件
-        </mdui-button>
-        <mdui-button variant="outlined" @click="editDialogOpen = true">
+        </m3e-button>
+        <m3e-button variant="outlined" @click="editDialogOpen = true">
           <Icon slot="icon" name="material-symbols:edit" />
           手动编辑
-        </mdui-button>
+        </m3e-button>
       </div>
       <input
         ref="fileInputRef"
@@ -47,39 +55,44 @@
           class="preview-icon"
           :class="{ 'preview-icon--error': !previewOk }"
         />
-        <span class="preview-text" :class="{ 'preview-text--error': !previewOk }">{{ previewLabel }}</span>
+        <span
+          class="preview-text"
+          :class="{ 'preview-text--error': !previewOk }"
+          >{{ previewLabel }}</span
+        >
       </div>
     </div>
+  </m3e-card>
 
-    <!-- 手动编辑对话框 -->
-    <mdui-dialog
-      :open="editDialogOpen"
-      @close="editDialogOpen = false"
-      close-on-overlay-click
-      close-on-esc
-    >
-      <div class="dialog-title">编辑 CSES YAML</div>
-      <div class="dialog-body">
-        <mdui-text-field
-          class="json-field"
-          textarea
-          autosize
+  <!-- 手动编辑对话框 -->
+  <m3e-dialog
+    :open="editDialogOpen"
+    dismissible
+    @closed="editDialogOpen = false"
+  >
+    <span slot="header">编辑 CSES YAML</span>
+    <div class="dialog-body">
+      <m3e-form-field class="json-field">
+        <textarea
+          class="text-area"
           rows="16"
           placeholder="粘贴 CSES YAML 内容"
           :value="modelValue.csesRaw"
           @input="
             $emit('update:modelValue', {
               ...modelValue,
-              csesRaw: $event.target.value,
+              csesRaw: ($event.target as HTMLTextAreaElement).value,
             })
           "
-        ></mdui-text-field>
-      </div>
-      <mdui-button slot="action" variant="text" @click="editDialogOpen = false"
-        >完成</mdui-button
+        ></textarea>
+      </m3e-form-field>
+    </div>
+    <div slot="actions" end>
+      <m3e-button variant="text" @click="editDialogOpen = false"
+        >完成</m3e-button
       >
-    </mdui-dialog>
-  </mdui-card>
+    </div>
+  </m3e-dialog>
 </template>
 
 <script setup lang="ts">
@@ -105,7 +118,7 @@ const previewLabel = computed(() => {
   if (!parseResult.value) return "";
   if (!parseResult.value.ok) return parseResult.value.error || "解析失败";
   if (parseResult.value.warning) return parseResult.value.warning;
-  return `已加载 ${parseResult.value.lessons.length} 节课`;
+  return `成功解析课表`;
 });
 
 const previewOk = computed(() => {
@@ -143,7 +156,7 @@ function onFileSelected(event: Event) {
 
 .section-label {
   font-size: var(--md3-label-large);
-  color: rgb(var(--mdui-color-on-surface-variant));
+  color: var(--md-sys-color-on-surface-variant);
   margin-top: 4px;
 }
 
@@ -158,43 +171,53 @@ function onFileSelected(event: Event) {
   gap: 8px;
   padding: 8px 12px;
   border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    rgb(var(--mdui-color-primary)) 12%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
 }
 
 .preview-icon {
-  color: rgb(var(--mdui-color-primary));
+  color: var(--md-sys-color-primary);
   font-size: 20px;
 }
 
 .preview-icon--error {
-  color: rgb(var(--mdui-color-error));
+  color: var(--md-sys-color-error);
 }
 
 .preview-text {
   font-size: var(--md3-body-small);
-  color: rgb(var(--mdui-color-primary));
+  color: var(--md-sys-color-primary);
 }
 
 .preview-text--error {
-  color: rgb(var(--mdui-color-error));
-}
-
-.dialog-title {
-  font-size: var(--md3-title-medium);
-  font-weight: 500;
-  color: rgb(var(--mdui-color-on-surface));
-  margin-bottom: 12px;
+  color: var(--md-sys-color-error);
 }
 
 .dialog-body {
   min-width: 420px;
 }
 
+.text-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+  padding: 4px 0;
+}
+
+.text-area {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+  resize: vertical;
+  padding: 8px 0;
+}
+
 .json-field {
-  --mdui-shape-corner-extra-small: 14px;
+  --m3e-form-field-container-shape: 14px;
 }
 </style>

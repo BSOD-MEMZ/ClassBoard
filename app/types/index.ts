@@ -1,4 +1,5 @@
 export interface AppTool {
+  enabled: boolean;
   key: string;
   name: string;
   description: string;

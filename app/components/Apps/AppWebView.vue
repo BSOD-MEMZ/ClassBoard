@@ -24,6 +24,6 @@ defineProps<{ url: string }>();
   min-height: 0;
   border: none;
   border-radius: 0;
-  background: rgb(var(--mdui-color-surface));
+  background: var(--md-sys-color-surface);
 }
 </style>

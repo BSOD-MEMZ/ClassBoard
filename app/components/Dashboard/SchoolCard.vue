@@ -1,8 +1,10 @@
 <template>
-  <mdui-card class="block school-block">
-    <div class="school-name">{{ schoolName }}</div>
-    <div class="classroom-name">{{ classroomName }}</div>
-  </mdui-card>
+  <m3e-card class="block school-block" variant="outlined">
+    <div slot="content">
+      <div class="school-name">{{ schoolName }}</div>
+      <div class="classroom-name">{{ classroomName }}</div>
+    </div>
+  </m3e-card>
 </template>
 
 <script setup lang="ts">
@@ -13,7 +15,7 @@ defineProps<{ schoolName: string; classroomName: string }>();
 .school-name {
   font-size: var(--md3-title-large);
   font-weight: 500;
-  color: var(--app-seed-color, rgb(var(--mdui-color-on-primary-container)));
+  color: var(--app-seed-color, var(--md-sys-color-on-primary-container));
 }
 
 .classroom-name {
@@ -21,6 +23,6 @@ defineProps<{ schoolName: string; classroomName: string }>();
   font-size: clamp(1.1rem, 4.6vw, 1.45rem);
   line-height: 1.3;
   font-weight: 600;
-  color: rgb(var(--mdui-color-primary)) !important;
+  color: var(--md-sys-color-primary) !important;
 }
 </style>

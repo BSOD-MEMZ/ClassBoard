@@ -7,6 +7,7 @@ const activeApp = ref<AppTool | null>(null);
 export function useApps() {
   const appTools: AppTool[] = [
     {
+      enabled: true,
       key: "xuexi",
       name: "学习强国",
       description: "学习强国官网",
@@ -14,6 +15,7 @@ export function useApps() {
       url: "https://xuexi.cn",
     },
     {
+      enabled: false,
       key: "classwork",
       name: "ClassWork 作业板",
       description: "显示作业内容和管理班级信息",
@@ -21,6 +23,7 @@ export function useApps() {
       url: "https://classworks.wuyuan.dev/",
     },
     {
+      enabled: true,
       key: "cutdown",
       name: "倒计时",
       description: "在线倒计时",
@@ -28,13 +31,15 @@ export function useApps() {
       url: "https://www.lddgo.net/common/countdown",
     },
     {
+      enabled: true,
       key: "ua",
       name: "User-Agent在线分析",
       description: "查看班牌的浏览器内核和系统信息",
-      icon: "app_shortcut",
+      icon: "browse-activity-outline",
       url: "https://www.lddgo.net/network/useragent",
     },
     {
+      enabled: false,
       key: "gushiwen",
       name: "古文岛",
       description: "查询古诗文",

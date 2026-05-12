@@ -1,18 +1,17 @@
 import type { AppConfig } from "@/types/config";
 
-export const STORAGE_KEY = "classboard_vue_mdui_config_v1";
+export const STORAGE_KEY = "classboard_vue_m3e_config_v1";
 
 export const defaultConfig: AppConfig = {
   schoolName: "株洲市南方中学",
   classroomName: "未命名教室",
   themeMode: "auto",
-  themeColor: "#2a5f9e",
+  themeColor: "#39c5bb",
   weatherEnabled: true,
   weatherCity: "株洲",
   weatherLatitude: 27.83,
   weatherLongitude: 113.15,
   csesRaw: "",
-  schedule: {},
 };
 
 export const weatherCodeMap: Record<number, string> = {
@@ -38,8 +37,7 @@ export const weatherCodeMap: Record<number, string> = {
 };
 
 export function cloneDefault(): AppConfig {
-  if (typeof structuredClone === "function")
-    return structuredClone(defaultConfig);
+  if (typeof structuredClone === "function") return structuredClone(defaultConfig);
   return JSON.parse(JSON.stringify(defaultConfig));
 }
 
@@ -47,9 +45,6 @@ export function normalizeConfig(parsed: Partial<AppConfig> | null): AppConfig {
   return {
     ...cloneDefault(),
     ...(parsed || {}),
-    schedule: {
-      ...(parsed?.schedule || {}),
-    },
   };
 }
 

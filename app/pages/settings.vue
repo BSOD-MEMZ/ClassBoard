@@ -63,7 +63,6 @@
 </template>
 
 <script setup lang="ts">
-import { snackbar } from "mdui";
 import type { AppConfig, SettingsSection } from "@/types/config";
 import type { CityResult } from "@/types";
 import {
@@ -82,7 +81,6 @@ import DevicePanel from "@/components/Settings/DevicePanel.vue";
 import DataPanel from "@/components/Settings/DataPanel.vue";
 import XxtsoftDialog from "@/components/Shared/XxtsoftDialog.vue";
 
-
 const route = useRoute();
 const router = useRouter();
 
@@ -95,32 +93,49 @@ const sections: SettingsSection[] = [
     label: "WLAN",
     icon: "wifi",
     description: "暂无权限 - 以太网",
+    enabled: false,
   },
   {
     key: "bluetooth",
     label: "蓝牙",
     icon: "bluetooth",
     description: "暂无权限",
+    enabled: false,
   },
   {
     key: "appearance",
     label: "显示",
     icon: "palette",
     description: "深色主题、动态主题色",
+    enabled: true,
   },
   {
     key: "basic",
     label: "课表",
     icon: "dashboard",
     description: "学校信息、课表与进度",
+    enabled: true,
   },
-  { key: "weather", label: "天气", icon: "partly_cloudy_day", description: "" },
-  { key: "device", label: "关于设备", icon: "memory", description: "" },
+  {
+    key: "weather",
+    label: "天气",
+    icon: "partly_cloudy_day",
+    description: "城市地理位置",
+    enabled: true,
+  },
+  {
+    key: "device",
+    label: "关于设备",
+    icon: "memory",
+    description: "设备信息与参数",
+    enabled: false,
+  },
   {
     key: "data",
     label: "数据与维护",
     icon: "tune",
     description: "导出、恢复默认",
+    enabled: true,
   },
 ];
 
@@ -180,11 +195,20 @@ function updateAppearance(val: { themeMode: string; themeColor: string }) {
   draft.themeColor = val.themeColor;
 }
 
-function updateBasic(val: { schoolName: string; classroomName: string; csesRaw: string }) {
+function updateBasic(val: {
+  schoolName: string;
+  classroomName: string;
+  csesRaw: string;
+}) {
   Object.assign(draft, val);
 }
 
-function updateWeather(val: { weatherEnabled: boolean; weatherCity: string; weatherLatitude: string; weatherLongitude: string }) {
+function updateWeather(val: {
+  weatherEnabled: boolean;
+  weatherCity: string;
+  weatherLatitude: string;
+  weatherLongitude: string;
+}) {
   Object.assign(draft, val);
 }
 
@@ -229,7 +253,7 @@ function useCity(city: CityResult) {
   draft.weatherLongitude = String(city.longitude ?? "");
   cityResults.value = [];
   try {
-    snackbar({ message: `已选择 ${city.name}` });
+    M3eSnackbar.open(`已选择 ${city.name}`);
   } catch {
     /* ignore */
   }
@@ -262,7 +286,7 @@ function resetSettings() {
     cfg.value.weatherCity,
   );
   try {
-    snackbar({ message: "已恢复默认设置。" });
+    M3eSnackbar.open("已恢复默认设置。");
   } catch {
     /* ignore */
   }

@@ -24,11 +24,7 @@ export function useWeather() {
   let weatherTimer: ReturnType<typeof setInterval> | null = null;
   let weatherRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  async function refreshWeather(
-    lat: number,
-    lon: number,
-    cityName: string,
-  ): Promise<void> {
+  async function refreshWeather(lat: number, lon: number, cityName: string): Promise<void> {
     if (import.meta.server) return;
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
       weatherLoading.value = false;
@@ -56,11 +52,7 @@ export function useWeather() {
     }
   }
 
-  function scheduleWeatherRefresh(
-    lat: number,
-    lon: number,
-    cityName: string,
-  ): void {
+  function scheduleWeatherRefresh(lat: number, lon: number, cityName: string): void {
     if (import.meta.server) return;
     if (weatherRefreshTimeout) clearTimeout(weatherRefreshTimeout);
     weatherRefreshTimeout = setTimeout(() => {
@@ -91,22 +83,14 @@ export function useWeather() {
     }
   }
 
-  function useCity(
-    city: CityResult,
-    onSelect: (city: CityResult) => void,
-  ): void {
+  function useCity(city: CityResult, onSelect: (city: CityResult) => void): void {
     cityResults.value = [];
     cityQuery.value = city.name || "";
     onSelect(city);
     if (!import.meta.server) alert(`已选择 ${city.name}`);
   }
 
-  function startWeatherTimer(
-    lat: number,
-    lon: number,
-    cityName: string,
-    enabled: boolean,
-  ): void {
+  function startWeatherTimer(lat: number, lon: number, cityName: string, enabled: boolean): void {
     if (import.meta.server) return;
     if (weatherTimer) clearInterval(weatherTimer);
     if (!enabled) {
@@ -115,10 +99,7 @@ export function useWeather() {
       return;
     }
     refreshWeather(lat, lon, cityName);
-    weatherTimer = setInterval(
-      () => refreshWeather(lat, lon, cityName),
-      15 * 60 * 1000,
-    );
+    weatherTimer = setInterval(() => refreshWeather(lat, lon, cityName), 15 * 60 * 1000);
   }
 
   function stopWeatherTimer(): void {

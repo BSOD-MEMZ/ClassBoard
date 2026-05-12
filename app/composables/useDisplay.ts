@@ -1,6 +1,6 @@
+import { nextTick } from "vue";
 import type { ThemeMode } from "@/types/config";
 import { defaultConfig } from "./useConfig";
-import { setColorScheme } from "mdui";
 
 // Module-level singletons — shared across all useDisplay() calls
 const screenOff = ref(false);
@@ -8,59 +8,53 @@ const isFullscreen = ref(false);
 const fakeDevEnabled = ref(false);
 const modelTapCount = ref(0);
 
-let mediaQuery: MediaQueryList | null = null;
-let mediaHandler: (() => void) | null = null;
+export const themeColor = ref(defaultConfig.themeColor);
+export const themeScheme = ref<"light" | "dark" | "auto">("auto");
+export const themeEl = ref<HTMLElement | null>(null);
+
+const ROOT_TOKENS = [
+  "--md-sys-color-background",
+  "--md-sys-color-on-background",
+  "--md-sys-color-surface",
+  "--md-sys-color-on-surface",
+  "--md-sys-color-surface-container",
+  "--md-sys-color-surface-container-low",
+  "--md-sys-color-surface-container-high",
+  "--md-sys-color-surface-container-highest",
+  "--md-sys-color-on-surface-variant",
+  "--md-sys-color-outline-variant",
+  "--md-sys-color-primary-container",
+  "--md-sys-color-on-primary-container",
+];
+
+function syncTokensToRoot(): void {
+  if (import.meta.server || !themeEl.value) return;
+  const styles = getComputedStyle(themeEl.value);
+  const root = document.documentElement;
+  for (const token of ROOT_TOKENS) {
+    const value = styles.getPropertyValue(token).trim();
+    if (value) root.style.setProperty(token, value);
+  }
+}
 
 export function useDisplay() {
   function applyTheme(mode?: string, color?: string): void {
     if (import.meta.server) return;
-    const root = document.documentElement;
-    const themeMode = mode || "auto";
+    const themeMode = (mode || "auto") as "light" | "dark" | "auto";
     const seed = color || defaultConfig.themeColor;
-    root.classList.remove("mdui-theme-light", "mdui-theme-dark");
-    if (themeMode === "dark") {
-      root.classList.add("mdui-theme-dark");
-    } else if (themeMode === "light") {
-      root.classList.add("mdui-theme-light");
-    } else {
-      const dark =
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches;
-      root.classList.add(dark ? "mdui-theme-dark" : "mdui-theme-light");
-    }
-    root.style.setProperty("--app-seed-color", seed);
-    try {
-      if (typeof setColorScheme === "function") setColorScheme(seed);
-    } catch {
-      /* ignore */
-    }
+
+    themeColor.value = seed;
+    themeScheme.value = themeMode;
+
+    nextTick(() => requestAnimationFrame(() => syncTokensToRoot()));
   }
 
-  function setupMediaListener(
-    getMode: () => ThemeMode,
-    getColor: () => string,
-  ): void {
-    if (import.meta.server) return;
-    mediaQuery = window.matchMedia
-      ? window.matchMedia("(prefers-color-scheme: dark)")
-      : null;
-    if (mediaQuery) {
-      mediaHandler = () => {
-        if ((getMode() || "auto") === "auto") applyTheme("auto", getColor());
-      };
-      if (mediaQuery.addEventListener)
-        mediaQuery.addEventListener("change", mediaHandler);
-      else if (mediaQuery.addListener) mediaQuery.addListener(mediaHandler);
-    }
+  function setupMediaListener(_getMode: () => ThemeMode, _getColor: () => string): void {
+    themeEl.value?.addEventListener("change", syncTokensToRoot);
   }
 
   function cleanupMediaListener(): void {
-    if (mediaQuery && mediaHandler) {
-      if (mediaQuery.removeEventListener)
-        mediaQuery.removeEventListener("change", mediaHandler);
-      else if (mediaQuery.removeListener)
-        mediaQuery.removeListener(mediaHandler);
-    }
+    themeEl.value?.removeEventListener("change", syncTokensToRoot);
   }
 
   function toggleFullscreen(): void {
@@ -96,8 +90,7 @@ export function useDisplay() {
     modelTapCount.value += 1;
     const remain = 7 - modelTapCount.value;
     if (remain > 0) {
-      if (!import.meta.server)
-        alert(`现在只需要再执行 ${remain} 步操作即可进入开发者模式。`);
+      if (!import.meta.server) alert(`现在只需要再执行 ${remain} 步操作即可进入开发者模式。`);
     } else {
       fakeDevEnabled.value = true;
       if (!import.meta.server) alert("您现在处于开发者模式！");

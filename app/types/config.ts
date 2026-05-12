@@ -17,4 +17,5 @@ export interface SettingsSection {
   label: string;
   icon: string;
   description: string;
+  enabled: boolean;
 }

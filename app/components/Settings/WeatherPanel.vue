@@ -1,63 +1,84 @@
 <template>
-  <mdui-card class="block settings-block">
-    <div class="block-title">天气</div>
-    <div class="form-grid">
+  <m3e-card class="block settings-block" variant="outlined">
+    <div slot="header" class="block-title">天气</div>
+    <div slot="content" class="form-grid">
       <div class="switch-row">
         <span>启用天气</span>
-        <mdui-switch
+        <m3e-switch
           :checked="modelValue.weatherEnabled"
           @change="
             $emit('update:modelValue', {
               ...modelValue,
-              weatherEnabled: $event.target.checked,
+              weatherEnabled: ($event.target as HTMLInputElement).checked,
             })
           "
-        ></mdui-switch>
+        ></m3e-switch>
       </div>
-      <mdui-text-field
-        label="城市名称"
-        :value="modelValue.weatherCity"
-        @input="
-          $emit('update:modelValue', {
-            ...modelValue,
-            weatherCity: $event.target.value,
-          })
-        "
-      ></mdui-text-field>
+      <m3e-form-field>
+        <label slot="label" for="weather-city">城市名称</label>
+        <input
+          id="weather-city"
+          class="text-input"
+          :value="modelValue.weatherCity"
+          @input="
+            $emit('update:modelValue', {
+              ...modelValue,
+              weatherCity: ($event.target as HTMLInputElement).value,
+            })
+          "
+        />
+      </m3e-form-field>
       <div class="split-2">
-        <mdui-text-field
-          label="纬度"
-          type="number"
-          step="0.0001"
-          :value="modelValue.weatherLatitude"
-          @input="
-            $emit('update:modelValue', {
-              ...modelValue,
-              weatherLatitude: $event.target.value,
-            })
-          "
-        ></mdui-text-field>
-        <mdui-text-field
-          label="经度"
-          type="number"
-          step="0.0001"
-          :value="modelValue.weatherLongitude"
-          @input="
-            $emit('update:modelValue', {
-              ...modelValue,
-              weatherLongitude: $event.target.value,
-            })
-          "
-        ></mdui-text-field>
+        <m3e-form-field>
+          <label slot="label" for="weather-lat">纬度</label>
+          <input
+            id="weather-lat"
+            class="text-input"
+            type="number"
+            step="0.0001"
+            :value="modelValue.weatherLatitude"
+            @input="
+              $emit('update:modelValue', {
+                ...modelValue,
+                weatherLatitude: ($event.target as HTMLInputElement).value,
+              })
+            "
+          />
+        </m3e-form-field>
+        <m3e-form-field>
+          <label slot="label" for="weather-lon">经度</label>
+          <input
+            id="weather-lon"
+            class="text-input"
+            type="number"
+            step="0.0001"
+            :value="modelValue.weatherLongitude"
+            @input="
+              $emit('update:modelValue', {
+                ...modelValue,
+                weatherLongitude: ($event.target as HTMLInputElement).value,
+              })
+            "
+          />
+        </m3e-form-field>
       </div>
       <div class="city-search">
-        <mdui-text-field
-          label="搜索城市自动填经纬度"
-          :value="cityQuery"
-          @input="$emit('update:city-query', $event.target.value)"
-        ></mdui-text-field>
-        <mdui-button variant="outlined" @click="$emit('search-city')"
-          >搜索</mdui-button
+        <m3e-form-field>
+          <label slot="label" for="city-search">搜索城市自动填经纬度</label>
+          <input
+            id="city-search"
+            class="text-input"
+            :value="cityQuery"
+            @input="
+              $emit(
+                'update:city-query',
+                ($event.target as HTMLInputElement).value,
+              )
+            "
+          />
+        </m3e-form-field>
+        <m3e-button variant="outlined" @click="$emit('search-city')"
+          >搜索</m3e-button
         >
       </div>
       <div v-if="cityLoading" class="tip">搜索中...</div>
@@ -78,7 +99,7 @@
         </button>
       </div>
     </div>
-  </mdui-card>
+  </m3e-card>
 </template>
 
 <script setup lang="ts">
@@ -116,7 +137,7 @@ defineEmits<{
   justify-content: space-between;
   align-items: center;
   min-height: 44px;
-  color: rgb(var(--mdui-color-on-surface-variant));
+  color: var(--md-sys-color-on-surface-variant);
 }
 
 .split-2 {
@@ -131,10 +152,20 @@ defineEmits<{
   gap: 10px;
 }
 
+.text-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+  padding: 4px 0;
+}
+
 .tip {
   margin-top: 8px;
   line-height: 1.45;
-  color: rgb(var(--mdui-color-on-surface-variant));
+  color: var(--md-sys-color-on-surface-variant);
   font-size: var(--md3-body-medium);
 }
 
@@ -146,19 +177,16 @@ defineEmits<{
 .city-item {
   text-align: left;
   border: 1px solid
-    color-mix(
-      in srgb,
-      rgb(var(--mdui-color-outline-variant)) 48%,
-      transparent 52%
-    );
+    color-mix(in srgb, var(--md-sys-color-outline-variant) 48%, transparent 52%);
   border-radius: 12px;
   background: color-mix(
     in srgb,
-    rgb(var(--mdui-color-surface-container-high)) 86%,
+    var(--md-sys-color-surface-container-high) 86%,
     transparent 14%
   );
   padding: 10px;
   color: inherit;
+  cursor: pointer;
 }
 
 .city-name {
@@ -168,6 +196,6 @@ defineEmits<{
 .city-meta {
   margin-top: 4px;
   font-size: 0.84rem;
-  color: rgb(var(--mdui-color-on-surface-variant));
+  color: var(--md-sys-color-on-surface-variant);
 }
 </style>

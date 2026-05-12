@@ -1,49 +1,83 @@
 <template>
   <ClientOnly>
     <div class="app-shell" :class="{ 'webview-mode': isWebView }">
-      <mdui-top-app-bar
+      <m3e-app-bar
         v-if="!screenOff"
-        variant="small"
+        size="small"
+        centered
+        for="pageBody"
         class="app-top-bar"
-        scroll-target=".page-body"
       >
-        <mdui-button-icon
+        <m3e-icon-button
+          slot="leading"
           class="nav-back-btn"
           :class="{ 'nav-back-btn--hidden': !showBack }"
           @click="handleBack"
         >
           <Icon name="material-symbols:arrow-back" class="icon-glyph" />
-        </mdui-button-icon>
-        <mdui-top-app-bar-title>{{ barTitle }}</mdui-top-app-bar-title>
-      </mdui-top-app-bar>
+        </m3e-icon-button>
+        <span slot="title">{{ barTitle }}</span>
+      </m3e-app-bar>
 
-      <main class="page-body">
+      <main id="pageBody" class="page-body">
         <slot />
       </main>
 
       <footer class="bottom-nav">
-        <mdui-navigation-bar :value="route.path" @change="onNavChange">
-          <mdui-navigation-bar-item value="/"
-            >主页
+        <m3e-nav-bar>
+          <m3e-nav-item
+            :selected="route.path === '/'"
+            @click="router.push('/')"
+          >
+            主页
             <Icon slot="icon" name="material-symbols:home" class="nav-icon" />
-            <Icon slot="active-icon" name="material-symbols:home" class="nav-icon" />
-          </mdui-navigation-bar-item>
-          <mdui-navigation-bar-item value="/apps"
-            >应用
+            <Icon
+              slot="selected-icon"
+              name="material-symbols:home"
+              class="nav-icon"
+            />
+          </m3e-nav-item>
+          <m3e-nav-item
+            :selected="route.path === '/apps'"
+            @click="router.push('/apps')"
+          >
+            应用
             <Icon slot="icon" name="material-symbols:apps" class="nav-icon" />
-            <Icon slot="active-icon" name="material-symbols:apps" class="nav-icon" />
-          </mdui-navigation-bar-item>
-          <mdui-navigation-bar-item value="/settings"
-            >设置
-            <Icon slot="icon" name="material-symbols:settings" class="nav-icon" />
-            <Icon slot="active-icon" name="material-symbols:settings" class="nav-icon" />
-          </mdui-navigation-bar-item>
-          <mdui-navigation-bar-item value="/about"
-            >关于
+            <Icon
+              slot="selected-icon"
+              name="material-symbols:apps"
+              class="nav-icon"
+            />
+          </m3e-nav-item>
+          <m3e-nav-item
+            :selected="route.path === '/settings'"
+            @click="router.push('/settings')"
+          >
+            设置
+            <Icon
+              slot="icon"
+              name="material-symbols:settings"
+              class="nav-icon"
+            />
+            <Icon
+              slot="selected-icon"
+              name="material-symbols:settings"
+              class="nav-icon"
+            />
+          </m3e-nav-item>
+          <m3e-nav-item
+            :selected="route.path === '/about'"
+            @click="router.push('/about')"
+          >
+            关于
             <Icon slot="icon" name="material-symbols:info" class="nav-icon" />
-            <Icon slot="active-icon" name="material-symbols:info" class="nav-icon" />
-          </mdui-navigation-bar-item>
-        </mdui-navigation-bar>
+            <Icon
+              slot="selected-icon"
+              name="material-symbols:info"
+              class="nav-icon"
+            />
+          </m3e-nav-item>
+        </m3e-nav-bar>
       </footer>
 
       <PowerFab @click="powerOffScreen" />
@@ -82,13 +116,8 @@ const isWebView = computed(
 const barTitle = computed(() => {
   if (route.path === "/apps" && appsView.value === "web" && activeApp.value)
     return activeApp.value.name;
-  return "株洲市南方中学电子班牌";
+  return "ClassBoard";
 });
-
-function onNavChange(event: any) {
-  const value = event?.target?.value || event?.detail?.value;
-  if (value && value !== route.path) router.push(value);
-}
 
 function handleBack() {
   if (route.path === "/apps" && appsView.value === "web") {
@@ -99,16 +128,14 @@ function handleBack() {
 }
 
 useHead({
-  title: "株洲市南方中学电子班牌",
+  title: "ClassBoard",
   meta: [
     {
       name: "viewport",
       content: "width=device-width, initial-scale=1, viewport-fit=cover",
     },
   ],
-  link: [
-    { rel: "icon", type: "image/png", href: "assets/xxtsoft.png" },
-  ],
+  link: [{ rel: "icon", type: "image/png", href: "assets/xxtsoft.png" }],
 });
 </script>
 
@@ -134,6 +161,14 @@ useHead({
 }
 
 .app-top-bar {
+  --m3e-app-bar-container-color: color-mix(
+    in srgb,
+    var(--md-sys-color-primary-container) 72%,
+    var(--md-sys-color-surface) 28%
+  );
+  --m3e-app-bar-title-text-color: var(--md-sys-color-on-primary-container);
+  --m3e-app-bar-container-elevation: var(--md-sys-elevation-level1);
+  --m3e-app-bar-container-elevation-on-scroll: var(--md-sys-elevation-level2);
   position: fixed;
   top: 0;
   left: 0;
@@ -141,18 +176,6 @@ useHead({
   width: 100%;
   z-index: 28;
   border-radius: 0;
-  background: color-mix(
-    in srgb,
-    rgb(var(--mdui-color-primary-container)) 72%,
-    rgb(var(--mdui-color-surface)) 28%
-  );
-  color: rgb(var(--mdui-color-on-primary-container));
-  border-bottom: 1px solid
-    color-mix(
-      in srgb,
-      rgb(var(--mdui-color-outline-variant)) 46%,
-      transparent 54%
-    );
 }
 
 .nav-back-btn {
@@ -192,14 +215,10 @@ useHead({
   width: 100%;
   z-index: 30;
   border-top: 1px solid
-    color-mix(
-      in srgb,
-      rgb(var(--mdui-color-outline-variant)) 32%,
-      transparent 68%
-    );
+    color-mix(in srgb, var(--md-sys-color-outline-variant) 32%, transparent 68%);
   background: color-mix(
     in srgb,
-    rgb(var(--mdui-color-surface)) 60%,
+    var(--md-sys-color-surface) 60%,
     transparent 40%
   );
   backdrop-filter: blur(8px);

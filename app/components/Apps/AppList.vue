@@ -1,23 +1,25 @@
 <template>
-  <mdui-card class="block apps-block">
-    <div class="block-title">应用</div>
-    <div class="tip">
-      在线工具非 xxtsoft 提供，若页面禁止嵌入，请点击标题栏返回并更换工具。
+  <m3e-card class="block apps-block" variant="outlined">
+    <div slot="header" class="block-title">应用</div>
+    <div slot="content">
+      <div class="tip">
+        在线工具非 xxtsoft 提供，若页面禁止嵌入，请点击标题栏返回并更换工具。
+      </div>
+      <m3e-action-list class="apps-list" variant="segmented">
+        <m3e-list-action
+          v-for="tool in tools"
+          :key="tool.key"
+          :disabled="!tool.enabled"
+          @click="$emit('open-tool', tool)"
+        >
+          <Icon slot="leading" :name="`material-symbols:${tool.icon}`" />
+          {{ tool.name }}
+          <span slot="supporting-text">{{ tool.description }}</span>
+          <Icon slot="trailing" name="material-symbols:open-in-new" />
+        </m3e-list-action>
+      </m3e-action-list>
     </div>
-    <mdui-list class="apps-list">
-      <mdui-list-item
-        v-for="tool in tools"
-        :key="tool.key"
-        rounded
-        @click="$emit('open-tool', tool)"
-      >
-        <Icon slot="icon" :name="`material-symbols:${tool.icon.replace(/_/g, '-')}`" />
-        {{ tool.name }}
-        <span slot="description">{{ tool.description }}</span>
-        <Icon slot="end-icon" name="material-symbols:open-in-new" />
-      </mdui-list-item>
-    </mdui-list>
-  </mdui-card>
+  </m3e-card>
 </template>
 
 <script setup lang="ts">
@@ -30,12 +32,11 @@ defineEmits<{ "open-tool": [tool: AppTool] }>();
 .tip {
   margin-top: 8px;
   line-height: 1.45;
-  color: rgb(var(--mdui-color-on-surface-variant));
+  color: var(--md-sys-color-on-surface-variant);
   font-size: var(--md3-body-medium);
 }
 
 .apps-list {
-  margin-top: 10px;
-  margin-inline: -16px;
+  margin-top: 20px;
 }
 </style>

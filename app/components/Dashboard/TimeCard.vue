@@ -1,22 +1,24 @@
 <template>
-  <mdui-card class="block time-block">
-    <div class="clock">{{ timeText }}</div>
-    <div class="line">
-     <Icon name="material-symbols:calendar-month" /><span>{{ dateText }}</span>
+  <m3e-card class="block time-block" variant="outlined">
+    <div slot="content">
+      <div class="clock">{{ timeText }}</div>
+      <div class="line">
+        <Icon name="material-symbols:calendar-month" /><span>{{
+          dateText
+        }}</span>
+      </div>
+      <div v-if="weatherVisible || weatherLoading" class="line">
+        <Icon name="material-symbols:partly-cloudy-day" />
+        <m3e-skeleton :loaded="!weatherLoading">
+          <span>{{ weatherText }}</span>
+        </m3e-skeleton>
+      </div>
+      <div v-else class="line unavailable">
+        <Icon name="material-symbols:cloud-off" />
+        <span>不可用</span>
+      </div>
     </div>
-    <div v-if="weatherLoading" class="line">
-     <Icon name="material-symbols:partly-cloudy-day" />
-      <span class="skeleton-line"></span>
-    </div>
-    <div v-else-if="weatherVisible" class="line">
-     <Icon name="material-symbols:partly-cloudy-day" />
-      <span>{{ weatherText }}</span>
-    </div>
-    <div v-else class="line unavailable">
-     <Icon name="material-symbols:cloud-off" />
-      <span>不可用</span>
-    </div>
-  </mdui-card>
+  </m3e-card>
 </template>
 
 <script setup lang="ts">
@@ -43,35 +45,11 @@ defineProps<{
   align-items: center;
   gap: 8px;
   font-size: var(--md3-body-medium);
-  color: rgb(var(--mdui-color-on-surface-variant));
+  color: var(--md-sys-color-on-surface-variant);
   margin-top: 4px;
 }
 
 .line.unavailable {
   opacity: 0.5;
-}
-
-.skeleton-line {
-  display: inline-block;
-  height: 14px;
-  width: 160px;
-  border-radius: 4px;
-  background: linear-gradient(
-    90deg,
-    rgba(var(--mdui-color-on-surface-variant), 0.12) 25%,
-    rgba(var(--mdui-color-on-surface-variant), 0.25) 50%,
-    rgba(var(--mdui-color-on-surface-variant), 0.12) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 </style>

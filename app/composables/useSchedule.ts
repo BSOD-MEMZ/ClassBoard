@@ -1,10 +1,6 @@
 import type { AppConfig } from "@/types/config";
 import type { Lesson, ClassState } from "@/types/schedule";
-import {
-  formatDuration,
-  parseCsesLessons,
-  lessonsForDate,
-} from "@/utils/schedule";
+import { formatDuration, parseCsesLessons, lessonsForDate } from "@/utils/schedule";
 
 function teacherLabel(teacher: string): string {
   const t = String(teacher || "").trim();
@@ -13,18 +9,12 @@ function teacherLabel(teacher: string): string {
 
 export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
   const parsedCses = computed(() => {
-    return parseCsesLessons(
-      config.value.csesRaw || "",
-      "yaml",
-    );
+    return parseCsesLessons(config.value.csesRaw || "", "yaml");
   });
 
   const classState = computed<ClassState>(() => {
     const current = now.value;
-    const currentM =
-      current.getHours() * 60 +
-      current.getMinutes() +
-      current.getSeconds() / 60;
+    const currentM = current.getHours() * 60 + current.getMinutes() + current.getSeconds() / 60;
 
     if (!parsedCses.value.ok) {
       return {
@@ -61,28 +51,17 @@ export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
     const nextToday = lessonsToday.find((x) => x.startM > currentM);
     if (nextToday) {
       const startDate = new Date(current);
-      startDate.setHours(
-        Math.floor(nextToday.startM / 60),
-        nextToday.startM % 60,
-        0,
-        0,
-      );
+      startDate.setHours(Math.floor(nextToday.startM / 60), nextToday.startM % 60, 0, 0);
       const remain = startDate.getTime() - current.getTime();
       const remainMin = remain / 60000;
       const remainSec = Math.max(0, Math.ceil(remain / 1000));
 
       // Dynamic pre-class window: gap between consecutive lessons, capped at 60 min
-      const prevEnds = lessonsToday
-        .filter((x) => x.endM <= currentM)
-        .map((x) => x.endM);
-      const gap = prevEnds.length > 0
-        ? nextToday.startM - Math.max(...prevEnds)
-        : remainMin;
+      const prevEnds = lessonsToday.filter((x) => x.endM <= currentM).map((x) => x.endM);
+      const gap = prevEnds.length > 0 ? nextToday.startM - Math.max(...prevEnds) : remainMin;
       const windowMins = Math.min(gap, 60);
       const show = remainMin <= windowMins;
-      const p = show
-        ? Math.max(0, Math.min(1, (windowMins - remainMin) / windowMins))
-        : 0;
+      const p = show ? Math.max(0, Math.min(1, (windowMins - remainMin) / windowMins)) : 0;
       return {
         statusText: show ? "" : `下一节课 ${nextToday.start}-${nextToday.end}`,
         courseText: nextToday.course,
@@ -101,12 +80,7 @@ export function useSchedule(config: Ref<AppConfig>, now: Ref<Date>) {
       if (targetLessons.length) {
         const first = targetLessons[0];
         const startDate = new Date(d);
-        startDate.setHours(
-          Math.floor(first.startM / 60),
-          first.startM % 60,
-          0,
-          0,
-        );
+        startDate.setHours(Math.floor(first.startM / 60), first.startM % 60, 0, 0);
         return {
           statusText: `下一节课在 ${d.getMonth() + 1}月${d.getDate()}日 ${first.start}（${formatDuration(startDate.getTime() - current.getTime())}后）`,
           courseText: first.course,
