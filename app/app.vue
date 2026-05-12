@@ -1,5 +1,5 @@
 <template>
-  <m3e-theme ref="themeEl" :color="themeColor" :scheme="themeScheme">
+  <m3e-theme ref="themeEl" :color="themeColor" :scheme="themeScheme" motion="expressive">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

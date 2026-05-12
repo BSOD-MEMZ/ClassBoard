@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block apps-block" variant="outlined">
+  <m3e-card class="block apps-block" variant="elevated">
     <div slot="header" class="block-title">应用</div>
     <div slot="content">
       <div class="tip">

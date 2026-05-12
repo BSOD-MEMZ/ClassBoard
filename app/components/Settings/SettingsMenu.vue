@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block settings-block settings-menu-card" variant="outlined">
+  <m3e-card class="block settings-block settings-menu-card" variant="elevated">
     <div slot="header" class="block-title">设置</div>
     <m3e-action-list
       slot="content"

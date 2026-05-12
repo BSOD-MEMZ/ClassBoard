@@ -5,6 +5,7 @@
       <div class="switch-row">
         <span>启用天气</span>
         <m3e-switch
+          icons="both"
           :checked="modelValue.weatherEnabled"
           @change="
             $emit('update:modelValue', {

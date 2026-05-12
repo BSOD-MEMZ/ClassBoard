@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block school-block" variant="outlined">
+  <m3e-card class="block school-block" variant="elevated">
     <div slot="content">
       <div class="school-name">{{ schoolName }}</div>
       <div class="classroom-name">{{ classroomName }}</div>

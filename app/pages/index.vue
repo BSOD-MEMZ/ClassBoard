@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .view {
   display: grid;
-  gap: 12px;
+  gap: 20px;
   animation: rise-in 180ms ease;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block time-block" variant="outlined">
+  <m3e-card class="block time-block" variant="elevated">
     <div slot="content">
       <div class="clock">{{ timeText }}</div>
       <div class="line">

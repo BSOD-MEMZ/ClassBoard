@@ -16,18 +16,6 @@ body {
 
 body {
   font-size: var(--md3-body-large);
-  background-image: linear-gradient(
-    180deg,
-    var(--md-sys-color-surface, #faf9ff) 0%,
-    var(--md-sys-color-surface, #faf9ff) 48%,
-    var(--md-sys-color-surface-container-low, #f2f0f5) 100%
-  );
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--md-sys-color-primary-container, #d6e3ff) 42%, var(--md-sys-color-surface, #faf9ff) 58%) 0%,
-    var(--md-sys-color-surface, #faf9ff) 46%,
-    var(--md-sys-color-surface-container-low, #f2f0f5) 100%
-  );
 }
 
 #app {
@@ -72,4 +60,13 @@ body {
   to {
     opacity: 1;
   }
+}
+
+m3e-card {
+  --m3e-elevated-card-container-color: var(--md-sys-color-surface-container);
+  --m3e-filled-card-container-color: var(--md-sys-color-secondary-container);
+  --m3e-outlined-card-container-color: var(--md-sys-color-surface-container-low);
+  --m3e-elevated-card-text-color: var(--md-sys-color-on-surface-container);
+  --m3e-filled-card-text-color: var(--md-sys-color-on-secondary-container);
+  --m3e-outlined-card-text-color: var(--md-sys-color-on-surface-container-low);
 }

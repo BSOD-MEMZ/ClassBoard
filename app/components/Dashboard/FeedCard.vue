@@ -1,4 +1,4 @@
-<template>   <m3e-card class="block feed-block" variant="outlined">
+<template>   <m3e-card class="block feed-block" variant="elevated">
     <div slot="header" class="block-title">
       {{ feedData.title || "校园资讯" }}
     </div>

@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
     <section class="view view-about">
-      <m3e-card class="block" variant="outlined">
+      <m3e-card class="block" variant="elevated">
         <div slot="header" class="block-title">关于</div>
         <div slot="content">
           <span class="tip">

@@ -1,5 +1,5 @@
 <template>
-  <m3e-card class="block class-block" variant="outlined">
+  <m3e-card class="block class-block" variant="elevated">
     <div slot="header" class="block-title">课程状态</div>
     <div slot="content">
       <div v-if="classState.statusText" class="status">
@@ -16,7 +16,7 @@
         ></m3e-linear-progress-indicator>
         <div class="progress-note">{{ classState.progressNote }}</div>
       </div>
-      <m3e-card class="today-lessons">
+      <m3e-card class="today-lessons" variant="filled">
         <div slot="header" class="tiny-label">今日课程安排</div>
         <m3e-list slot="content" variant="segmented" v-if="todayLessons.length" class="today-lesson-list">
           <m3e-list-item v-for="(lesson, idx) in todayLessonsVisible" :key="idx">
@@ -90,15 +90,14 @@ defineEmits<{
 }
 
 .today-lessons {
-  margin-top: 10px;
+  --m3e-card-container-elevation: var(--md-sys-elevation-2);
+  margin-top: 16px;
   padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 38%, transparent 62%);
 }
 
 .today-lesson-list {
   margin-top: 8px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 58%, transparent 42%);
   overflow: hidden;
 }
 
@@ -108,7 +107,6 @@ defineEmits<{
   justify-content: space-between;
   width: 100%;
   font-size: var(--md3-body-medium);
-  color: var(--md-sys-color-on-surface);
 }
 
 .compact-tip {
