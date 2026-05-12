@@ -5,7 +5,9 @@ export default defineNuxtConfig({
   modules: ["@nuxt/icon"],
   css: ["@/assets/css/main.css"],
   icon: {
-    serverBundle: "local",
+    clientBundle: {
+      scan: true,
+    },
   },
   app: {
     head: {

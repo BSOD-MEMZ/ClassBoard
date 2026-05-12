@@ -27,6 +27,9 @@ importers:
       '@iconify-json/material-symbols':
         specifier: ^1.2.71
         version: 1.2.71
+      '@iconify-json/mdi':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@nuxt/icon':
         specifier: ^2.2.2
         version: 2.2.2(magicast@0.5.2)(vite@7.3.3(jiti@2.7.0)(terser@5.47.1)(yaml@2.8.4))(vue@3.5.34)
@@ -526,6 +529,9 @@ packages:
 
   '@iconify-json/material-symbols@1.2.71':
     resolution: {integrity: sha512-anxtI3TtLv7VVtISrp8WqXU4vexszKwN7yFOmXoZjSSsIgiFp3HrMeWBFqlZPr90CVgP717dxc2OhCJyiEnOfw==}
+
+  '@iconify-json/mdi@1.2.3':
+    resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
 
   '@iconify/collections@1.0.681':
     resolution: {integrity: sha512-R6XnljppXTHqHlKnoLig6r/Qj8WqOqce0+G1VVZGMJvo6gxpi0huLJ8vh+TudvF7cGJQco2ZBi3TMbDW3cFZFQ==}
@@ -3962,6 +3968,10 @@ snapshots:
   '@floating-ui/utils@0.2.11': {}
 
   '@iconify-json/material-symbols@1.2.71':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/mdi@1.2.3':
     dependencies:
       '@iconify/types': 2.0.0
 
