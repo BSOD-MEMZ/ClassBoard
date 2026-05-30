@@ -1,6 +1,12 @@
 // Virtual keyboard state — shared globally
 
+export type KeyboardMode = "en" | "num" | "cn" | "jp";
+
 const keyboardVisible = ref(false);
+const keyboardMode = ref<KeyboardMode>("en");
+const shiftLock = ref(false);
+const jpKanaMode = ref<"hiragana" | "katakana">("hiragana");
+const composing = ref(""); // Current IME composition string (pinyin/romaji in progress)
 let activeInput: HTMLInputElement | HTMLTextAreaElement | null = null;
 
 function isEditable(el: HTMLElement): el is HTMLInputElement | HTMLTextAreaElement {
@@ -17,9 +23,10 @@ export function useVirtualKeyboard() {
   function hideKeyboard() {
     activeInput = null;
     keyboardVisible.value = false;
+    composing.value = "";
   }
 
-  function insertText(text: string) {
+  function insertAtCursor(text: string) {
     if (!activeInput) return;
     const el = activeInput;
     const start = el.selectionStart ?? el.value.length;
@@ -30,8 +37,45 @@ export function useVirtualKeyboard() {
     el.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
+  function insertText(text: string) {
+    if (!activeInput) return;
+    if (keyboardMode.value === "cn") {
+      // Chinese: build pinyin, show candidates
+      composing.value += text.toLowerCase();
+      return;
+    }
+    if (keyboardMode.value === "jp") {
+      // Japanese: build romaji, convert via composable
+      composing.value += text.toLowerCase();
+      return;
+    }
+    insertAtCursor(keyboardMode.value === "en" && shiftLock.value ? text.toUpperCase() : text);
+    shiftLock.value = false;
+  }
+
+  function commitComposition(text: string) {
+    if (!activeInput) return;
+    const el = activeInput;
+    // Remove the composing text placeholder area and insert the result
+    insertAtCursor(text);
+    composing.value = "";
+    shiftLock.value = false;
+  }
+
+  function cancelComposition() {
+    if (composing.value && activeInput) {
+      // For JP mode, insert the raw romaji; for CN, insert raw pinyin
+      insertAtCursor(composing.value);
+    }
+    composing.value = "";
+  }
+
   function backspace() {
     if (!activeInput) return;
+    if (composing.value) {
+      composing.value = composing.value.slice(0, -1);
+      return;
+    }
     const el = activeInput;
     const start = el.selectionStart ?? el.value.length;
     const end = el.selectionEnd ?? start;
@@ -47,28 +91,48 @@ export function useVirtualKeyboard() {
 
   async function pasteFromClipboard() {
     if (!activeInput) return;
+    composing.value = "";
     try {
       const text = await navigator.clipboard.readText();
-      if (text) insertText(text);
-    } catch {
-      // clipboard not available
-    }
+      if (text) insertAtCursor(text);
+    } catch {}
   }
 
   function submit() {
     if (!activeInput) return;
+    cancelComposition();
     activeInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     activeInput.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", bubbles: true }));
     hideKeyboard();
   }
 
+  function toggleShift() {
+    shiftLock.value = !shiftLock.value;
+  }
+
+  function toggleKanaMode() {
+    jpKanaMode.value = jpKanaMode.value === "hiragana" ? "katakana" : "hiragana";
+  }
+
+  function setMode(mode: KeyboardMode) {
+    cancelComposition();
+    keyboardMode.value = mode;
+    shiftLock.value = false;
+  }
+
+  function cycleMode() {
+    cancelComposition();
+    const order: KeyboardMode[] = ["en", "cn", "jp"];
+    const idx = order.indexOf(keyboardMode.value);
+    keyboardMode.value = order[(idx + 1) % order.length];
+    shiftLock.value = false;
+  }
+
   return {
-    keyboardVisible,
-    showKeyboard,
-    hideKeyboard,
-    insertText,
-    backspace,
-    pasteFromClipboard,
-    submit,
+    keyboardVisible, keyboardMode, shiftLock, jpKanaMode, composing,
+    showKeyboard, hideKeyboard,
+    insertText, insertAtCursor, commitComposition, cancelComposition,
+    backspace, pasteFromClipboard, submit,
+    toggleShift, toggleKanaMode, setMode, cycleMode,
   };
 }
