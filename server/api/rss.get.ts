@@ -1,9 +1,19 @@
+// In-memory cache: url -> { data, ts }
+const cache = new Map<string, { data: any; ts: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const feedUrl =
     typeof query.url === "string" && query.url.trim()
       ? query.url.trim()
       : "https://www.chinanews.com.cn/rss/china.xml";
+
+  const cached = cache.get(feedUrl);
+  if (cached && Date.now() - cached.ts < CACHE_TTL) {
+    setResponseHeader(event, "Cache-Control", "public, max-age=300");
+    return cached.data;
+  }
 
   try {
     const xmlText = await $fetch<string>(feedUrl, {
@@ -14,11 +24,15 @@ export default defineEventHandler(async (event) => {
     const items = parseRssItems(xmlText);
     const title = extractTag(xmlText, "title") || "RSS 资讯";
 
-    return {
+    const result = {
       title,
       updatedAt: new Date().toLocaleString("zh-CN"),
       items: items.slice(0, 8),
     };
+
+    cache.set(feedUrl, { data: result, ts: Date.now() });
+    setResponseHeader(event, "Cache-Control", "public, max-age=300");
+    return result;
   } catch {
     throw createError({ statusCode: 502, statusMessage: "RSS source unavailable" });
   }

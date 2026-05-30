@@ -20,4 +20,20 @@ export default defineNuxtConfig({
       isCustomElement: (tag: string) => tag.startsWith("m3e-"),
     },
   },
+  // Build optimizations
+  nitro: {
+    compressPublicAssets: true,
+  },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            if (id.includes("node_modules/@m3e")) return "m3e";
+            if (id.includes("node_modules/js-yaml")) return "yaml";
+          },
+        },
+      },
+    },
+  },
 });

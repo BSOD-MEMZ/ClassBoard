@@ -1,71 +1,32 @@
-import type { FeedData } from "@/types";
-import { normalizeFeedPayload } from "@/utils/feed";
+import { createFeedSource } from "./useFeedSource";
 import { loadConfig } from "./useConfig";
 
-const RSS_CACHE_KEY = "classboard_rss_cache_v1";
+const rssSource = createFeedSource({
+  cacheKey: "classboard_rss_cache_v1",
+  fallbackTitle: "RSS 资讯",
+  refreshIntervalMs: 10 * 60 * 1000,
+  showFallbackItems: false,
+});
+
+function getRssUrl(): string {
+  const config = loadConfig();
+  return config.rssUrl || "https://www.chinanews.com.cn/rss/china.xml";
+}
 
 export function useRss() {
-  const rssData = ref<FeedData>({
-    title: "RSS 资讯",
-    updatedAt: "",
-    items: [],
-  });
-
-  let rssTimer: ReturnType<typeof setInterval> | null = null;
-
-  async function refreshRss(): Promise<void> {
-    if (import.meta.server) return;
-    const config = loadConfig();
-    if (!config.rssEnabled) return;
-
-    const rssUrl = config.rssUrl || "https://www.chinanews.com.cn/rss/china.xml";
-
-    try {
-      const data = await $fetch<Record<string, unknown>>("/api/rss", {
-        query: { url: rssUrl },
-      });
-      const normalized = normalizeFeedPayload(data);
-      if (normalized.items.length) {
-        rssData.value = normalized;
-        localStorage.setItem(RSS_CACHE_KEY, JSON.stringify(normalized));
-        return;
-      }
-    } catch {
-      /* API failed, try cache */
-    }
-
-    try {
-      const cacheRaw = localStorage.getItem(RSS_CACHE_KEY);
-      if (cacheRaw) {
-        const normalizedCache = normalizeFeedPayload(JSON.parse(cacheRaw));
-        if (normalizedCache.items.length) {
-          rssData.value = normalizedCache;
-          return;
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-
-    rssData.value = {
-      title: "RSS 资讯",
-      updatedAt: "",
-      items: [],
-    };
-  }
-
-  function startRssTimer(): void {
-    if (import.meta.server) return;
-    refreshRss();
-    rssTimer = setInterval(refreshRss, 10 * 60 * 1000);
-  }
-
-  function stopRssTimer(): void {
-    if (rssTimer) {
-      clearInterval(rssTimer);
-      rssTimer = null;
-    }
-  }
-
-  return { rssData, refreshRss, startRssTimer, stopRssTimer };
+  return {
+    rssData: rssSource.data,
+    refreshRss: () => {
+      const config = loadConfig();
+      if (!config.rssEnabled) return;
+      return rssSource.refresh("/api/rss", { url: getRssUrl() });
+    },
+    startRssTimer: () => {
+      const config = loadConfig();
+      if (!config.rssEnabled) return;
+      rssSource.start("/api/rss", { url: getRssUrl() });
+    },
+    stopRssTimer: () => rssSource.stop(),
+  };
 }
+

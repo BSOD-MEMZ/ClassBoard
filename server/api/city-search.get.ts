@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
   const key = String(name).trim()
   const cached = cache.get(key)
   if (cached && Date.now() - cached.ts < TTL) {
+    setResponseHeader(event, "Cache-Control", "public, max-age=1800")
     return cached.data
   }
 
@@ -19,6 +20,7 @@ export default defineEventHandler(async (event) => {
       `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(String(name))}&count=8&language=zh&format=json`
     )
     cache.set(key, { data, ts: Date.now() })
+    setResponseHeader(event, "Cache-Control", "public, max-age=1800")
     return data
   } catch {
     throw createError({ statusCode: 502, statusMessage: 'Geocoding API unavailable' })

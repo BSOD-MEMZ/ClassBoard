@@ -234,21 +234,21 @@ const draft = reactive({
   rssUrl: cfg.value.rssUrl || "",
 });
 
+// Fields that map 1:1 between config and draft (same type)
+const DIRECT_FIELDS = [
+  "schoolName", "classroomName", "themeMode", "themeColor",
+  "weatherEnabled", "weatherCity", "csesRaw", "scheduleFile",
+  "wallpaper", "widgetOpacity", "navStyle", "rssEnabled", "rssUrl",
+] as const;
+
 function syncFromConfig() {
-  draft.schoolName = cfg.value.schoolName;
-  draft.classroomName = cfg.value.classroomName;
-  draft.themeMode = cfg.value.themeMode;
-  draft.themeColor = cfg.value.themeColor;
-  draft.weatherEnabled = cfg.value.weatherEnabled;
-  draft.weatherCity = cfg.value.weatherCity;
+  for (const f of DIRECT_FIELDS) {
+    (draft as Record<string, unknown>)[f] = cfg.value[f] ?? "";
+  }
   draft.weatherLatitude = String(cfg.value.weatherLatitude);
   draft.weatherLongitude = String(cfg.value.weatherLongitude);
-  draft.csesRaw = cfg.value.csesRaw || "";
-  draft.scheduleFile = cfg.value.scheduleFile || "";
-  draft.wallpaper = cfg.value.wallpaper || "";
   draft.widgetOpacity = cfg.value.widgetOpacity ?? 1;
-  draft.navStyle = cfg.value.navStyle || ("fixed" as AppConfig["navStyle"]);
-  draft.rssEnabled = cfg.value.rssEnabled;
+  draft.navStyle = cfg.value.navStyle || "fixed";
   draft.rssUrl = cfg.value.rssUrl || "";
   cityQuery.value = "";
   cityResults.value = [];
@@ -308,19 +308,13 @@ function openSection(key: string) {
 }
 
 function applyDraftToConfig() {
+  for (const f of DIRECT_FIELDS) {
+    (cfg.value as Record<string, unknown>)[f] = (draft as Record<string, unknown>)[f];
+  }
   cfg.value.schoolName = draft.schoolName.trim() || defaultConfig.schoolName;
-  cfg.value.classroomName =
-    draft.classroomName.trim() || defaultConfig.classroomName;
-  cfg.value.themeMode = draft.themeMode as AppConfig["themeMode"];
+  cfg.value.classroomName = draft.classroomName.trim() || defaultConfig.classroomName;
   cfg.value.themeColor = draft.themeColor || defaultConfig.themeColor;
-  cfg.value.weatherEnabled = draft.weatherEnabled;
   cfg.value.weatherCity = draft.weatherCity.trim() || "当前城市";
-  cfg.value.csesRaw = draft.csesRaw;
-  cfg.value.scheduleFile = draft.scheduleFile || "";
-  cfg.value.wallpaper = draft.wallpaper;
-  cfg.value.widgetOpacity = draft.widgetOpacity;
-  cfg.value.navStyle = draft.navStyle as AppConfig["navStyle"];
-  cfg.value.rssEnabled = draft.rssEnabled;
   cfg.value.rssUrl = draft.rssUrl.trim() || defaultConfig.rssUrl;
 
   const lat = Number(draft.weatherLatitude);
@@ -332,7 +326,6 @@ function applyDraftToConfig() {
 
   saveConfig(cfg.value);
   applyTheme(cfg.value.themeMode, cfg.value.themeColor);
-  // Apply nav style
   if (import.meta.client) {
     document.documentElement.setAttribute("data-nav-style", cfg.value.navStyle || "fixed");
   }

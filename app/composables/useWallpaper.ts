@@ -11,7 +11,10 @@ const WALLPAPER_ENTRIES: { name: string; themeColor: string }[] = [
   { name: "wp2.png", themeColor: "#4450A0" },
 ];
 
-// Standard Vite glob — image imports return { default: assetUrl }
+// Standard Vite glob — image imports return { default: assetUrl }.
+// eager:true is needed here because wallpaper URLs are resolved synchronously
+// in the IIFE below. Images themselves are lazy-loaded by the browser only when
+// CSS background-image references them.
 const _globModules = import.meta.glob<{ default: string }>(
   "../assets/wallpaper/*.{png,jpg,jpeg}",
   { eager: true },
