@@ -78,6 +78,22 @@
         </m3e-button>
       </div>
 
+      <!-- Kiosk 模式 -->
+      <div class="row">
+        <span class="row-label">
+          <Icon name="material-symbols:captive-portal" class="label-icon" />
+          Kiosk 模式
+        </span>
+        <m3e-switch
+          :selected="modelValue.kioskMode"
+          @click="$emit('update:modelValue', { ...modelValue, kioskMode: !modelValue.kioskMode })"
+        />
+      </div>
+      <div v-if="modelValue.kioskMode" class="kiosk-hint">
+        <Icon name="material-symbols:info" class="hint-icon" />
+        启动时自动进入全屏，适合班牌长期展示
+      </div>
+
       <!-- 导航栏样式 -->
       <div class="section-divider">
         <span class="section-title">导航栏</span>
@@ -157,6 +173,7 @@ interface AppearanceDraft {
   widgetOpacity: number;
   navStyle: string;
   dashboardVisible: DashboardVisibility;
+  kioskMode: boolean;
 }
 const props = defineProps<{ modelValue: AppearanceDraft; isFullscreen: boolean }>();
 const emit = defineEmits<{
@@ -273,6 +290,25 @@ function selectWallpaper(name: string): void {
   gap: 10px;
   margin-top: 4px;
   flex-wrap: wrap;
+}
+
+/* Kiosk hint */
+.kiosk-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 10%, transparent);
+  font-size: var(--md3-body-medium);
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.4;
+}
+
+.hint-icon {
+  font-size: 18px;
+  color: var(--md-sys-color-primary);
+  flex-shrink: 0;
 }
 
 /* Section divider */

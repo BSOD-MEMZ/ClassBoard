@@ -32,6 +32,7 @@ export interface AppConfig {
   rssEnabled: boolean;
   rssUrl: string;
   dashboardVisible: DashboardVisibility;
+  kioskMode: boolean;
 }
 
 export interface SettingsSection {

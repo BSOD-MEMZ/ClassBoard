@@ -2,6 +2,9 @@
 
 * {
   box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 html,
@@ -12,6 +15,8 @@ body {
   font-family: "Roboto", "Noto Sans CJK SC", "Noto Sans SC", "Droid Sans", sans-serif;
   background-color: var(--md-sys-color-surface, #faf9ff);
   color: var(--md-sys-color-on-surface, #1c1b1f);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 body {
@@ -25,6 +30,13 @@ body {
 
 .iconify {
   font-size: 20px;
+}
+
+/* Allow text selection inside form controls */
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .block-title {

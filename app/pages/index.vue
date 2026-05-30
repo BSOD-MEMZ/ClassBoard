@@ -135,6 +135,14 @@ onMounted(() => {
   clockTimer = setInterval(() => {
     now.value = new Date();
   }, 1000);
+
+  // Kiosk mode: auto-enter fullscreen on startup
+  if (config.value.kioskMode) {
+    requestAnimationFrame(() => {
+      document.documentElement.requestFullscreen().catch(() => {});
+    });
+  }
+
   startWeatherTimer(
     config.value.weatherLatitude,
     config.value.weatherLongitude,
