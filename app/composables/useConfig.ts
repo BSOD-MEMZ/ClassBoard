@@ -49,6 +49,14 @@ export const defaultConfig: AppConfig = {
   navStyle: "fixed",
   rssEnabled: true,
   rssUrl: "https://www.chinanews.com.cn/rss/china.xml",
+  dashboardVisible: {
+    schoolCard: true,
+    timeCard: true,
+    classStatusCard: true,
+    videoCard: true,
+    feedCard: true,
+    rssCard: true,
+  },
 };
 
 export const weatherCodeMap: Record<number, string> = {

@@ -33,22 +33,12 @@
 
       <div class="section-label">CSES 课表 (YAML)</div>
 
-      <!-- 内置课表选择 -->
+      <!-- 内置课表选择 → RadioModal -->
       <div class="cses-actions">
-        <select
-          class="text-input schedule-select"
-          :value="scheduleFile"
-          @change="onScheduleSelect"
-        >
-          <option value="">-- 不使用课表 --</option>
-          <option
-            v-for="file in scheduleFiles"
-            :key="file.name"
-            :value="file.name"
-          >
-            {{ file.label }}
-          </option>
-        </select>
+        <button class="select-trigger" @click="scheduleModalOpen = true">
+          <span class="select-trigger-label">{{ selectedScheduleLabel }}</span>
+          <Icon name="material-symbols:chevron-right" class="select-trigger-arrow" />
+        </button>
       </div>
 
       <div class="cses-actions">
@@ -112,10 +102,21 @@
       >
     </div>
   </m3e-dialog>
+
+  <RadioModal
+    :open="scheduleModalOpen"
+    title="选择课表预设"
+    :model-value="scheduleFile || ''"
+    :options="scheduleOptions"
+    @update:model-value="onScheduleSelect"
+    @close="scheduleModalOpen = false"
+  />
 </template>
 
 <script setup lang="ts">
 import { parseCsesLessons } from "@/utils/schedule";
+import RadioModal from "@/components/Shared/RadioModal.vue";
+import type { RadioOption } from "@/components/Shared/RadioModal.vue";
 
 // 导入内置课表文件
 const scheduleModules = import.meta.glob<string>(
@@ -156,7 +157,24 @@ const emit = defineEmits<{
 }>();
 
 const editDialogOpen = ref(false);
+const scheduleModalOpen = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+
+const scheduleOptions = computed<RadioOption[]>(() => {
+  const options: RadioOption[] = [
+    { value: "", label: "不使用课表", description: "清空当前课表内容" },
+  ];
+  for (const f of scheduleFiles.value) {
+    options.push({ value: f.name, label: f.label });
+  }
+  return options;
+});
+
+const selectedScheduleLabel = computed(() => {
+  if (!props.scheduleFile) return "不使用课表";
+  const found = scheduleFiles.value.find((f) => f.name === props.scheduleFile);
+  return found?.label || props.scheduleFile;
+});
 
 const parseResult = computed(() => {
   if (!props.modelValue.csesRaw) return null;
@@ -175,9 +193,7 @@ const previewOk = computed(() => {
   return parseResult.value.ok && !parseResult.value.warning;
 });
 
-function onScheduleSelect(event: Event) {
-  const target = event.target as HTMLSelectElement;
-  const fileName = target.value;
+function onScheduleSelect(fileName: string) {
   emit("update:scheduleFile", fileName);
   if (!fileName) {
     emit("update:modelValue", { ...props.modelValue, csesRaw: "" });
@@ -228,21 +244,41 @@ function onFileSelected(event: Event) {
   gap: 10px;
 }
 
-.schedule-select {
+.select-trigger {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid var(--md-sys-color-outline-variant);
   background: var(--md-sys-color-surface-container);
   color: var(--md-sys-color-on-surface);
-  font-size: var(--md3-body-medium, 14px);
-  outline: none;
+  font-size: var(--md3-body-medium);
+  font-family: inherit;
   cursor: pointer;
-  appearance: auto;
+  outline: none;
+  transition: border-color 200ms ease, background-color 200ms ease;
+  box-sizing: border-box;
 }
 
-.schedule-select:focus {
+.select-trigger:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, var(--md-sys-color-surface-container));
+}
+
+.select-trigger:focus-visible {
   border-color: var(--md-sys-color-primary);
+}
+
+.select-trigger-label {
+  flex: 1;
+  text-align: left;
+}
+
+.select-trigger-arrow {
+  font-size: 20px;
+  color: var(--md-sys-color-on-surface-variant);
+  flex-shrink: 0;
 }
 
 .cses-preview {

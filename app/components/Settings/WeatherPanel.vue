@@ -9,11 +9,11 @@
         </span>
         <m3e-switch
           icons="both"
-          :checked="modelValue.weatherEnabled"
-          @change="
+          :selected="modelValue.weatherEnabled"
+          @click="
             $emit('update:modelValue', {
               ...modelValue,
-              weatherEnabled: ($event.target as HTMLInputElement).checked,
+              weatherEnabled: !modelValue.weatherEnabled,
             })
           "
         ></m3e-switch>

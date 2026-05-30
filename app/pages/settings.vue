@@ -19,6 +19,7 @@
             wallpaper: draft.wallpaper,
             widgetOpacity: draft.widgetOpacity,
             navStyle: draft.navStyle,
+            dashboardVisible: draft.dashboardVisible,
           }"
           :is-fullscreen="isFullscreen"
           @update:model-value="updateAppearance"
@@ -94,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AppConfig, SettingsSection } from "@/types/config";
+import type { AppConfig, SettingsSection, DashboardVisibility } from "@/types/config";
 import type { CityResult } from "@/types";
 import {
   loadConfig,
@@ -232,6 +233,7 @@ const draft = reactive({
   navStyle: cfg.value.navStyle || ("fixed" as AppConfig["navStyle"]),
   rssEnabled: cfg.value.rssEnabled,
   rssUrl: cfg.value.rssUrl || "",
+  dashboardVisible: { ...cfg.value.dashboardVisible },
 });
 
 // Fields that map 1:1 between config and draft (same type)
@@ -250,6 +252,7 @@ function syncFromConfig() {
   draft.widgetOpacity = cfg.value.widgetOpacity ?? 1;
   draft.navStyle = cfg.value.navStyle || "fixed";
   draft.rssUrl = cfg.value.rssUrl || "";
+  draft.dashboardVisible = { ...cfg.value.dashboardVisible };
   cityQuery.value = "";
   cityResults.value = [];
 }
@@ -271,12 +274,14 @@ function updateAppearance(val: {
   wallpaper?: string;
   widgetOpacity?: number;
   navStyle?: string;
+  dashboardVisible?: Record<string, boolean>;
 }) {
   draft.themeMode = val.themeMode as AppConfig["themeMode"];
   draft.themeColor = val.themeColor;
   if (val.wallpaper !== undefined) draft.wallpaper = val.wallpaper;
   if (val.widgetOpacity !== undefined) draft.widgetOpacity = val.widgetOpacity;
   if (val.navStyle !== undefined) draft.navStyle = val.navStyle as AppConfig["navStyle"];
+  if (val.dashboardVisible !== undefined) draft.dashboardVisible = val.dashboardVisible as AppConfig["dashboardVisible"];
 }
 
 function updateBasic(val: {
@@ -316,6 +321,7 @@ function applyDraftToConfig() {
   cfg.value.themeColor = draft.themeColor || defaultConfig.themeColor;
   cfg.value.weatherCity = draft.weatherCity.trim() || "当前城市";
   cfg.value.rssUrl = draft.rssUrl.trim() || defaultConfig.rssUrl;
+  cfg.value.dashboardVisible = { ...draft.dashboardVisible };
 
   const lat = Number(draft.weatherLatitude);
   const lon = Number(draft.weatherLongitude);

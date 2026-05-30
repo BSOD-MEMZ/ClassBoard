@@ -12,25 +12,24 @@
         <m3e-switch
           id="rss-enabled"
           :selected="modelValue.rssEnabled"
-          @change="$emit('update:modelValue', { ...modelValue, rssEnabled: !modelValue.rssEnabled })"
+          @click="$emit('update:modelValue', { ...modelValue, rssEnabled: !modelValue.rssEnabled })"
         />
       </div>
 
-      <!-- 预设源 -->
+      <!-- 新闻源选择 → RadioModal -->
       <div class="field">
-        <label class="tiny-label" for="rss-preset">
+        <label class="tiny-label">
           <Icon name="material-symbols:library-books-outline" class="label-icon" />
           选择新闻源
         </label>
-        <select
-          id="rss-preset"
-          class="text-input"
-          :value="presetVal"
+        <button
+          class="select-trigger"
           :disabled="!modelValue.rssEnabled"
-          @change="onPresetChange(($event.target as HTMLSelectElement).value)"
+          @click="rssModalOpen = true"
         >
-          <option v-for="p in presets" :key="p.url || '__custom__'" :value="p.url">{{ p.label }}</option>
-        </select>
+          <span class="select-trigger-label">{{ selectedLabel }}</span>
+          <Icon name="material-symbols:chevron-right" class="select-trigger-arrow" />
+        </button>
       </div>
 
       <!-- 自定义 URL -->
@@ -51,11 +50,22 @@
 
     </div>
   </m3e-card>
+
+  <RadioModal
+    :open="rssModalOpen"
+    title="选择新闻源"
+    :model-value="presetVal"
+    :options="presetOptions"
+    @update:model-value="onPresetSelect"
+    @close="rssModalOpen = false"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { RSS_PRESETS } from "@/composables/useConfig";
+import RadioModal from "@/components/Shared/RadioModal.vue";
+import type { RadioOption } from "@/components/Shared/RadioModal.vue";
 
 interface RssDraft {
   rssEnabled: boolean;
@@ -65,14 +75,25 @@ interface RssDraft {
 const props = defineProps<{ modelValue: RssDraft }>();
 const emit = defineEmits<{ "update:modelValue": [value: RssDraft] }>();
 
-const presets = RSS_PRESETS;
+const rssModalOpen = ref(false);
+
+const presetOptions: RadioOption[] = RSS_PRESETS.map((p) => ({
+  value: p.url,
+  label: p.label,
+  description: p.url || undefined,
+}));
 
 const presetVal = computed(() => {
-  const found = presets.find((p) => p.url && p.url === props.modelValue.rssUrl);
+  const found = RSS_PRESETS.find((p) => p.url && p.url === props.modelValue.rssUrl);
   return found?.url || "";
 });
 
-function onPresetChange(val: string): void {
+const selectedLabel = computed(() => {
+  const found = RSS_PRESETS.find((p) => p.url && p.url === props.modelValue.rssUrl);
+  return found?.label || "自定义";
+});
+
+function onPresetSelect(val: string): void {
   if (!val) return;
   emit("update:modelValue", { ...props.modelValue, rssUrl: val });
 }
@@ -119,6 +140,48 @@ function onPresetChange(val: string): void {
   flex-shrink: 0;
 }
 
+.select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md3-body-medium);
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 200ms ease, background-color 200ms ease;
+  box-sizing: border-box;
+}
+
+.select-trigger:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, var(--md-sys-color-surface-container));
+}
+
+.select-trigger:focus-visible {
+  border-color: var(--md-sys-color-primary);
+}
+
+.select-trigger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.select-trigger-label {
+  flex: 1;
+  text-align: left;
+}
+
+.select-trigger-arrow {
+  font-size: 20px;
+  color: var(--md-sys-color-on-surface-variant);
+  flex-shrink: 0;
+}
+
 .text-input {
   width: 100%;
   padding: 10px 12px;
@@ -140,14 +203,5 @@ function onPresetChange(val: string): void {
 .text-input:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-select.text-input {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23666' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 36px;
-  cursor: pointer;
 }
 </style>

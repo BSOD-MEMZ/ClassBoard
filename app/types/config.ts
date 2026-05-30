@@ -6,6 +6,15 @@ export interface RssPreset {
   url: string;
 }
 
+export interface DashboardVisibility {
+  schoolCard: boolean;
+  timeCard: boolean;
+  classStatusCard: boolean;
+  videoCard: boolean;
+  feedCard: boolean;
+  rssCard: boolean;
+}
+
 export interface AppConfig {
   schoolName: string;
   classroomName: string;
@@ -22,6 +31,7 @@ export interface AppConfig {
   navStyle: NavStyle;
   rssEnabled: boolean;
   rssUrl: string;
+  dashboardVisible: DashboardVisibility;
 }
 
 export interface SettingsSection {

@@ -2,10 +2,12 @@
   <ClientOnly>
     <section class="view view-home">
       <SchoolCard
+        v-if="config.dashboardVisible.schoolCard"
         :school-name="config.schoolName"
         :classroom-name="config.classroomName"
       />
       <TimeCard
+        v-if="config.dashboardVisible.timeCard"
         :time-text="timeText"
         :date-text="dateText"
         :weather-text="weatherText"
@@ -14,6 +16,7 @@
         :now-playing="nowPlaying"
       />
       <ClassStatusCard
+        v-if="config.dashboardVisible.classStatusCard"
         :class-state="classState"
         :today-lessons="todayLessons"
         :today-lessons-visible="todayLessonsVisible"
@@ -21,9 +24,9 @@
         :today-lessons-expanded="todayLessonsExpanded"
         @toggle-lessons="toggleTodayLessons"
       />
-      <LazyDashboardVideoCard />
-      <LazyDashboardFeedCard :feed-data="feedData" />
-      <LazyDashboardRssCard :rss-data="rssData" />
+      <LazyDashboardVideoCard v-if="config.dashboardVisible.videoCard" />
+      <LazyDashboardFeedCard v-if="config.dashboardVisible.feedCard" :feed-data="feedData" />
+      <LazyDashboardRssCard v-if="config.dashboardVisible.rssCard" :rss-data="rssData" />
     </section>
   </ClientOnly>
 </template>

@@ -124,12 +124,29 @@
         />
       </div>
 
+      <!-- 主界面组件显示 -->
+      <div class="section-divider">
+        <span class="section-title">主界面组件</span>
+      </div>
+
+      <div v-for="item in dashboardToggles" :key="item.key" class="row">
+        <span class="row-label">
+          <Icon :name="item.icon" class="label-icon" />
+          {{ item.label }}
+        </span>
+        <m3e-switch
+          :selected="modelValue.dashboardVisible[item.key]"
+          @click="$emit('update:modelValue', { ...modelValue, dashboardVisible: { ...modelValue.dashboardVisible, [item.key]: !modelValue.dashboardVisible[item.key] } })"
+        />
+      </div>
+
     </div>
   </m3e-card>
 </template>
 
 <script setup lang="ts">
 import { useWallpaper } from "@/composables/useWallpaper";
+import type { DashboardVisibility } from "@/types/config";
 
 const { wallpapers, wallpaperThemeColor } = useWallpaper();
 
@@ -139,12 +156,22 @@ interface AppearanceDraft {
   wallpaper: string;
   widgetOpacity: number;
   navStyle: string;
+  dashboardVisible: DashboardVisibility;
 }
 const props = defineProps<{ modelValue: AppearanceDraft; isFullscreen: boolean }>();
 const emit = defineEmits<{
   "update:modelValue": [value: AppearanceDraft];
   "toggle-fullscreen": [];
 }>();
+
+const dashboardToggles = [
+  { key: "schoolCard" as const, label: "学校信息", icon: "material-symbols:school" },
+  { key: "timeCard" as const, label: "时间与天气", icon: "material-symbols:schedule" },
+  { key: "classStatusCard" as const, label: "课程状态", icon: "material-symbols:class" },
+  { key: "videoCard" as const, label: "校园宣传片", icon: "material-symbols:play-circle" },
+  { key: "feedCard" as const, label: "校园资讯", icon: "material-symbols:article" },
+  { key: "rssCard" as const, label: "RSS 资讯", icon: "material-symbols:rss-feed" },
+];
 
 function selectWallpaper(name: string): void {
   const autoColor = wallpaperThemeColor(name);
@@ -267,6 +294,23 @@ function selectWallpaper(name: string): void {
   font-size: var(--md3-title-medium);
   font-weight: 500;
   color: var(--md-sys-color-on-surface);
+}
+
+/* Toggle rows */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.row-label {
+  font-size: var(--md3-body-medium);
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Wallpaper grid */
