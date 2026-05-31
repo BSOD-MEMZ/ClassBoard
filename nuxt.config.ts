@@ -29,7 +29,6 @@ export default defineNuxtConfig({
   vite: {
     build: {
       target: "es2020",
-      cssMinify: "lightningcss",
       minify: "esbuild",
       // Inline small assets to reduce HTTP requests
       assetsInlineLimit: 4096,
@@ -38,8 +37,6 @@ export default defineNuxtConfig({
           manualChunks(id: string) {
             if (id.includes("node_modules/@m3e")) return "m3e";
             if (id.includes("node_modules/js-yaml")) return "yaml";
-            if (id.includes("node_modules/vue") || id.includes("node_modules/@vue")) return "vue";
-            if (id.includes("node_modules")) return "vendor";
           },
         },
       },
