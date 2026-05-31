@@ -87,9 +87,34 @@
         />
       </Transition>
 
+      <!-- Profile panel (shown when logged in and clicking the login option) -->
+      <Transition :name="transitionName" appear>
+        <m3e-card v-if="section === 'profile'" class="block profile-card" variant="elevated">
+          <div slot="header" class="block-title">账号管理</div>
+          <div slot="content" class="profile-content">
+            <div class="profile-avatar">
+              <img v-if="currentUser?.avatar" :src="currentUser.avatar" class="profile-avatar-img" />
+              <Icon v-else name="material-symbols:account-circle" class="profile-avatar-icon" />
+            </div>
+            <div class="profile-name">{{ currentUser?.name || "" }}</div>
+            <div class="profile-role">{{ roleLabel(currentUser?.role || "") }}</div>
+            <div class="profile-type">登录方式：{{ isPermanent() ? "永久登录" : "临时登录（关闭浏览器后退出）" }}</div>
+          </div>
+          <div slot="actions" class="profile-actions">
+            <m3e-button variant="outlined" @click="switchAccount">切换账号</m3e-button>
+            <m3e-button variant="filled" @click="doLogout">退出登录</m3e-button>
+          </div>
+        </m3e-card>
+      </Transition>
+
       <XxtsoftDialog
         :open="xxtsoftDialogOpen"
         @close="xxtsoftDialogOpen = false"
+      />
+
+      <CardLoginModal
+        :visible="loginModalOpen"
+        @close="loginModalOpen = false"
       />
     </section>
   </ClientOnly>
@@ -115,6 +140,8 @@ import RssPanel from "@/components/Settings/RssPanel.vue";
 import DataPanel from "@/components/Settings/DataPanel.vue";
 import DeveloperPanel from "@/components/Settings/DeveloperPanel.vue";
 import XxtsoftDialog from "@/components/Shared/XxtsoftDialog.vue";
+import CardLoginModal from "@/components/Shared/CardLoginModal.vue";
+import { useAuth } from "@/composables/useAuth";
 
 const route = useRoute();
 const router = useRouter();
@@ -123,6 +150,8 @@ const section = ref<string>("root");
 const prevSection = ref<string>("root");
 const slideDir = ref<"forward" | "back">("forward");
 const xxtsoftDialogOpen = ref(false);
+const loginModalOpen = ref(false);
+const { loggedIn, currentUser, isPermanent, logout } = useAuth();
 
 const transitionName = computed(() =>
   slideDir.value === "forward" ? "slide-forward" : "slide-back",
@@ -140,6 +169,15 @@ const {
 } = useDisplay();
 
 const sections = computed<SettingsSection[]>(() => [
+  {
+    key: "login",
+    label: loggedIn.value ? (currentUser.value?.name || "已登录") : "登录",
+    icon: loggedIn.value ? "account_circle" : "login",
+    description: loggedIn.value
+      ? `当前${isPermanent() ? "永久" : "临时"}登录 · 点击管理账号`
+      : "刷卡登录以管理班牌",
+    enabled: true,
+  },
   {
     key: "wlan",
     label: "WLAN",
@@ -311,10 +349,41 @@ function updateRss(val: { rssEnabled: boolean; rssUrl: string }) {
 }
 
 function openSection(key: string) {
+  if (key === "login") {
+    if (loggedIn.value) {
+      // Already logged in → go to profile page
+      prevSection.value = section.value;
+      slideDir.value = "forward";
+      section.value = "profile";
+      router.replace({ query: { section: "profile" } });
+    } else {
+      // Not logged in → open card login modal
+      loginModalOpen.value = true;
+    }
+    return;
+  }
   prevSection.value = section.value;
   slideDir.value = "forward";
   section.value = key;
   router.replace({ query: { section: key } });
+}
+
+function roleLabel(role: string): string {
+  const map: Record<string, string> = { admin: "管理员", teacher: "教师", student: "学生" };
+  return map[role] || role;
+}
+
+function switchAccount(): void {
+  loginModalOpen.value = true;
+}
+
+function doLogout(): void {
+  logout();
+  // Go back to root settings menu
+  prevSection.value = section.value;
+  slideDir.value = "back";
+  section.value = "root";
+  router.replace({ query: {} });
 }
 
 function applyDraftToConfig() {
@@ -402,7 +471,7 @@ watch(
     if (newPath === "/settings") {
       syncFromConfig();
       const qs = route.query.section;
-      if (qs && typeof qs === "string" && sections.value.some((s) => s.key === qs)) {
+      if (qs && typeof qs === "string" && (sections.value.some((s) => s.key === qs) || qs === "profile")) {
         section.value = qs;
       } else {
         section.value = "root";
@@ -441,7 +510,7 @@ onMounted(() => {
   if (
     qSection &&
     typeof qSection === "string" &&
-    sections.value.some((s) => s.key === qSection)
+    (sections.value.some((s) => s.key === qSection) || qSection === "profile")
   ) {
     section.value = qSection;
   }
@@ -457,6 +526,55 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 12px;
   padding-bottom: 120px;
+}
+
+/* ── Profile card ── */
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0 8px;
+  gap: 6px;
+}
+
+.profile-avatar {
+  margin-bottom: 4px;
+}
+
+.profile-avatar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-avatar-icon {
+  font-size: 80px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.profile-name {
+  font-size: var(--md3-title-large);
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
+}
+
+.profile-role {
+  font-size: var(--md3-body-medium);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.profile-type {
+  margin-top: 4px;
+  font-size: var(--md3-label-medium);
+  color: var(--md-sys-color-outline);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 /* Panel transitions — horizontal slide (internal nav) */

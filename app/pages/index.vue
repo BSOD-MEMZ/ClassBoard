@@ -36,7 +36,7 @@ import SchoolCard from "@/components/Dashboard/SchoolCard.vue";
 import TimeCard from "@/components/Dashboard/TimeCard.vue";
 import ClassStatusCard from "@/components/Dashboard/ClassStatusCard.vue";
 import { loadConfig } from "@/composables/useConfig";
-import { useSchedule } from "@/composables/useSchedule";
+import { todayLessons, classState, scheduleClock } from "@/composables/useScheduleStore";
 import { useWeather } from "@/composables/useWeather";
 import { useFeed } from "@/composables/useFeed";
 import { useRss } from "@/composables/useRss";
@@ -47,11 +47,8 @@ import { useRipple } from "@/composables/useRipple";
 import { dayLabels } from "@/utils/schedule";
 
 const config = ref(loadConfig());
-// Use shallowRef for Date — avoids deep-reactivity overhead on a 1-second-updating value
-const now = shallowRef(new Date());
 const todayLessonsExpanded = ref(false);
 
-const { classState, todayLessons } = useSchedule(config, now);
 const {
   weatherText,
   weatherVisible,
@@ -65,13 +62,14 @@ const { applyTheme, setupMediaListener, cleanupMediaListener } = useDisplay();
 const { wallpapers, wallpaperUrlForName, wallpaperThemeColor, applyWallpaper } = useWallpaper();
 const { triggerRipple } = useRipple();
 
+// Time display uses the shared clock (no separate setInterval needed!)
 const timeText = computed(() => {
-  const d = now.value;
+  const d = scheduleClock.value;
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
 });
 
 const dateText = computed(() => {
-  const d = now.value;
+  const d = scheduleClock.value;
   return `${d.getFullYear()}年${String(d.getMonth() + 1).padStart(2, "0")}月${String(d.getDate()).padStart(2, "0")}日 ${dayLabels[d.getDay()]}`;
 });
 
@@ -113,10 +111,7 @@ watch(
   },
 );
 
-let clockTimer: ReturnType<typeof setInterval> | null = null;
-
 onMounted(() => {
-  // Apply wallpaper first (sets bg), then theme color can come from wallpaper
   if (config.value.wallpaper) {
     const url = wallpaperUrlForName(config.value.wallpaper);
     applyWallpaper(url || "");
@@ -132,9 +127,6 @@ onMounted(() => {
     () => config.value.themeMode,
     () => config.value.themeColor,
   );
-  clockTimer = setInterval(() => {
-    now.value = new Date();
-  }, 1000);
 
   // Kiosk mode: auto-enter fullscreen on startup
   if (config.value.kioskMode) {
@@ -156,7 +148,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (clockTimer) clearInterval(clockTimer);
   stopWeatherTimer();
   stopFeedTimer();
   stopRssTimer();
@@ -169,5 +160,7 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 20px;
   animation: rise-in 280ms cubic-bezier(0.0, 0.0, 0.2, 1);
+  /* GPU-composited: transform + opacity only, no layout triggers */
+  will-change: transform, opacity;
 }
 </style>

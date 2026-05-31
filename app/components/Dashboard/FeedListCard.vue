@@ -54,15 +54,11 @@ withDefaults(defineProps<{
 
 .feed-item {
   border-radius: 12px;
-  border: 1px solid
-    color-mix(in srgb, var(--md-sys-color-outline-variant) 36%, transparent 64%);
-  background: color-mix(
-    in srgb,
-    var(--md-sys-color-surface-container-high) 68%,
-    transparent 32%
-  );
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-high);
   padding: 12px 14px;
   line-height: 1.7;
+  opacity: 0.92;
 }
 
 .feed-title {

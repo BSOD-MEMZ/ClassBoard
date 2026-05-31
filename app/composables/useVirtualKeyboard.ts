@@ -7,6 +7,7 @@ const keyboardMode = ref<KeyboardMode>("en");
 const shiftLock = ref(false);
 const jpKanaMode = ref<"hiragana" | "katakana">("hiragana");
 const composing = ref(""); // Current IME composition string (pinyin/romaji in progress)
+const lastCommitted = ref(""); // Last committed Chinese character for 联想 prediction
 let activeInput: HTMLInputElement | HTMLTextAreaElement | null = null;
 
 function isEditable(el: HTMLElement): el is HTMLInputElement | HTMLTextAreaElement {
@@ -24,6 +25,7 @@ export function useVirtualKeyboard() {
     activeInput = null;
     keyboardVisible.value = false;
     composing.value = "";
+    lastCommitted.value = "";
   }
 
   function insertAtCursor(text: string) {
@@ -51,15 +53,28 @@ export function useVirtualKeyboard() {
     }
     insertAtCursor(keyboardMode.value === "en" && shiftLock.value ? text.toUpperCase() : text);
     shiftLock.value = false;
+    // Non-CN/JP mode: clear prediction context
+    lastCommitted.value = "";
   }
 
   function commitComposition(text: string) {
     if (!activeInput) return;
-    const el = activeInput;
-    // Remove the composing text placeholder area and insert the result
     insertAtCursor(text);
     composing.value = "";
     shiftLock.value = false;
+    // Track the last committed character for 联想 prediction
+    if (keyboardMode.value === "cn" && text.length === 1) {
+      lastCommitted.value = text;
+    }
+  }
+
+  function commitPrediction(text: string) {
+    if (!activeInput) return;
+    insertAtCursor(text);
+    // Keep lastCommitted as the prediction target, so predictions recycle
+    if (text.length === 1) {
+      lastCommitted.value = text;
+    }
   }
 
   function cancelComposition() {
@@ -68,6 +83,10 @@ export function useVirtualKeyboard() {
       insertAtCursor(composing.value);
     }
     composing.value = "";
+  }
+
+  function clearPrediction() {
+    lastCommitted.value = "";
   }
 
   function backspace() {
@@ -87,6 +106,8 @@ export function useVirtualKeyboard() {
       el.setSelectionRange(start, start);
     }
     el.dispatchEvent(new Event("input", { bubbles: true }));
+    // Clear prediction when deleting actual text
+    lastCommitted.value = "";
   }
 
   async function pasteFromClipboard() {
@@ -129,9 +150,9 @@ export function useVirtualKeyboard() {
   }
 
   return {
-    keyboardVisible, keyboardMode, shiftLock, jpKanaMode, composing,
+    keyboardVisible, keyboardMode, shiftLock, jpKanaMode, composing, lastCommitted,
     showKeyboard, hideKeyboard,
-    insertText, insertAtCursor, commitComposition, cancelComposition,
+    insertText, insertAtCursor, commitComposition, commitPrediction, cancelComposition, clearPrediction,
     backspace, pasteFromClipboard, submit,
     toggleShift, toggleKanaMode, setMode, cycleMode,
   };

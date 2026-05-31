@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   icon: {
     clientBundle: {
       scan: true,
+      sizeLimitKb: 256,
     },
   },
   app: {
@@ -20,17 +21,25 @@ export default defineNuxtConfig({
       isCustomElement: (tag: string) => tag.startsWith("m3e-"),
     },
   },
-  // Build optimizations
+  // Build & runtime optimizations for low-end devices
   nitro: {
-    compressPublicAssets: true,
+    compressPublicAssets: { brotli: true, gzip: true },
+    minify: true,
   },
   vite: {
     build: {
+      target: "es2020",
+      cssMinify: "lightningcss",
+      minify: "esbuild",
+      // Inline small assets to reduce HTTP requests
+      assetsInlineLimit: 4096,
       rollupOptions: {
         output: {
           manualChunks(id: string) {
             if (id.includes("node_modules/@m3e")) return "m3e";
             if (id.includes("node_modules/js-yaml")) return "yaml";
+            if (id.includes("node_modules/vue") || id.includes("node_modules/@vue")) return "vue";
+            if (id.includes("node_modules")) return "vendor";
           },
         },
       },

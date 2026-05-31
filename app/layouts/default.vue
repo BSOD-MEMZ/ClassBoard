@@ -110,7 +110,6 @@
 import { useDisplay } from "@/composables/useDisplay";
 import { useApps } from "@/composables/useApps";
 import { loadConfig } from "@/composables/useConfig";
-import { useSchedule } from "@/composables/useSchedule";
 import PowerFab from "@/components/Dashboard/PowerFab.vue";
 
 const route = useRoute();
@@ -130,8 +129,8 @@ const { screenOff, wakeScreen, powerOffScreen } = useDisplay();
 const { appsView, closeAppTool, activeApp } = useApps();
 
 // ---- Schedule info for app bar trailing slot ----
-const now = ref(new Date());
-const { todayLessons } = useSchedule(cfg, now);
+// Uses shared schedule store — no separate clock or parsing
+import { todayLessons, scheduleClock } from "@/composables/useScheduleStore";
 
 const isNotHome = computed(() => route.path !== "/");
 
@@ -154,15 +153,13 @@ interface ScheduleChipInfo {
 }
 
 const scheduleInfo = computed<ScheduleChipInfo>(() => {
-  const current = now.value;
+  const current = scheduleClock.value;
   const currentM = current.getHours() * 60 + current.getMinutes() + current.getSeconds() / 60;
 
-  // 没有今日课程
   if (!todayLessons.value.length) {
     return { text: "", icon: "", chipClass: "" };
   }
 
-  // 正在上课 — 从 todayLessons 精确计算剩余时间
   const currentLesson = todayLessons.value.find(
     (l) => currentM >= l.startM && currentM < l.endM,
   );
@@ -182,7 +179,6 @@ const scheduleInfo = computed<ScheduleChipInfo>(() => {
     };
   }
 
-  // 即将上课 — 下节课在 60 分钟内开始
   const nextLesson = todayLessons.value.find((l) => l.startM > currentM);
   if (nextLesson) {
     const startDate = new Date(current);
@@ -195,7 +191,6 @@ const scheduleInfo = computed<ScheduleChipInfo>(() => {
     const remainMs = startDate.getTime() - current.getTime();
     const remainMin = remainMs / 60000;
 
-    // 60分钟内有下节课 → 显示倒计时
     if (remainMin <= 60) {
       return {
         text: `还有${compactRemain(Math.max(0, remainMs))}上${nextLesson.course}`,
@@ -204,7 +199,6 @@ const scheduleInfo = computed<ScheduleChipInfo>(() => {
       };
     }
 
-    // 较远的下一节
     return {
       text: `下节 ${nextLesson.course} ${nextLesson.start}`,
       icon: "material-symbols:schedule",
@@ -213,18 +207,6 @@ const scheduleInfo = computed<ScheduleChipInfo>(() => {
   }
 
   return { text: "", icon: "", chipClass: "" };
-});
-
-let scheduleTimer: ReturnType<typeof setInterval> | null = null;
-
-onMounted(() => {
-  scheduleTimer = setInterval(() => {
-    now.value = new Date();
-  }, 1000);
-});
-
-onBeforeUnmount(() => {
-  if (scheduleTimer) clearInterval(scheduleTimer);
 });
 
 // ---- End schedule info ----
@@ -278,6 +260,9 @@ useHead({
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 10px;
+  /* GPU-friendly: promote shell to own composite layer */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .app-shell.webview-mode {
@@ -288,11 +273,7 @@ useHead({
 }
 
 .app-top-bar {
-  --m3e-app-bar-container-color: color-mix(
-    in srgb,
-    var(--md-sys-color-primary-container) 72%,
-    var(--md-sys-color-surface) 28%
-  );
+  --m3e-app-bar-container-color: var(--md-sys-color-primary-container);
   --m3e-app-bar-title-text-color: var(--md-sys-color-on-primary-container);
   --m3e-app-bar-container-elevation: var(--md-sys-elevation-level1);
   --m3e-app-bar-container-elevation-on-scroll: var(--md-sys-elevation-level2);
@@ -352,20 +333,20 @@ useHead({
 
 /* 正在上课 — 温暖高亮 */
 .chip--in-class {
-  background: color-mix(in srgb, var(--md-sys-color-tertiary-container, #e8def8) 72%, transparent);
+  background: var(--md-sys-color-tertiary-container, #e8def8);
   color: var(--md-sys-color-on-tertiary-container, #1d192b);
 }
 
 /* 即将上课 — 柔和提示 */
 .chip--upcoming {
-  background: color-mix(in srgb, var(--md-sys-color-secondary-container, #e8def8) 72%, transparent);
+  background: var(--md-sys-color-secondary-container, #e8def8);
   color: var(--md-sys-color-on-secondary-container, #1d192b);
 }
 
 /* 下一节（较远） — 标准色调 */
 .chip--next {
-  background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 72%, transparent);
-  color: var(--md-sys-color-on-surface-variant);
+  background: var(--md-sys-color-surface-container-high, #ece6f0);
+  color: var(--md-sys-color-on-surface-variant, #49454f);
 }
 
 .page-body {
@@ -397,14 +378,9 @@ html[data-nav-style="pill"] .page-body {
   bottom: 0;
   width: 100%;
   z-index: 30;
-  border-top: 1px solid
-    color-mix(in srgb, var(--md-sys-color-outline-variant) 32%, transparent 68%);
-  background: color-mix(
-    in srgb,
-    var(--md-sys-color-surface) 60%,
-    transparent 40%
-  );
-  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+  /* Solid fallback for older browsers where color-mix or tokens may not be ready */
+  background: var(--md-sys-color-surface, #faf9ff);
   padding: 2px 6px max(2px, env(safe-area-inset-bottom));
 }
 
@@ -419,13 +395,8 @@ html[data-nav-style="pill"] .page-body {
   transform: translateX(-50%);
   border-radius: 28px;
   border-top: none;
-  border: 1px solid
-    color-mix(in srgb, var(--md-sys-color-outline-variant) 28%, transparent 72%);
-  background: color-mix(
-    in srgb,
-    var(--md-sys-color-surface-container) 72%,
-    transparent 28%
-  );
+  border: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+  background: var(--md-sys-color-surface-container, #f0edf6);
   box-shadow: 0px 2px 8px 1px rgba(0, 0, 0, 0.12),
               0px 1px 3px 0px rgba(0, 0, 0, 0.08);
   padding: 4px 6px calc(4px + env(safe-area-inset-bottom));

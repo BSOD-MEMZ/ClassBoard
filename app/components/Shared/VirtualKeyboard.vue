@@ -4,17 +4,27 @@
       <div v-if="keyboardVisible" class="vk-overlay" @click.self="hideKeyboard()">
         <div class="vk-container" @mousedown.prevent>
 
-          <!-- Candidate bar: IME candidates or number shortcuts for CN/JP -->
+          <!-- Candidate bar: IME candidates + 联想 predictions for CN/JP -->
           <div v-if="showCandidateBar" class="vk-candidates">
             <button
               v-for="(c, idx) in candidates"
-              :key="idx"
+              :key="'c-' + idx"
               class="vk-candidate"
               @click.stop="commitComposition(c)"
             >{{ c }}</button>
             <span v-if="composing && !candidates.length" class="vk-composing">{{ composing }}</span>
           </div>
-          <!-- Number quick-access bar for CN/JP when not composing -->
+          <!-- 联想 prediction bar: shown when lastCommitted is set and not composing -->
+          <div v-if="showPredictionBar" class="vk-candidates vk-candidates--predict">
+            <span class="vk-predict-label">联想</span>
+            <button
+              v-for="(c, idx) in predictions"
+              :key="'p-' + idx"
+              class="vk-candidate vk-candidate--predict"
+              @click.stop="commitPrediction(c)"
+            >{{ c }}</button>
+          </div>
+          <!-- Number quick-access bar for CN/JP when not composing and no predictions -->
           <div v-if="showNumBar" class="vk-candidates">
             <button
               v-for="n in numKeys"
@@ -174,11 +184,12 @@
 import { computed, ref, watch } from "vue";
 import { useVirtualKeyboard } from "@/composables/useVirtualKeyboard";
 import { getCandidates } from "@/utils/pinyin";
+import { getPredictions } from "@/utils/predict";
 import { romajiToHiraganaWithSokuon, romajiToKatakana } from "@/utils/kana";
 
 const {
-  keyboardVisible, keyboardMode, shiftLock, jpKanaMode, composing,
-  hideKeyboard, insertText, insertAtCursor, commitComposition,
+  keyboardVisible, keyboardMode, shiftLock, jpKanaMode, composing, lastCommitted,
+  hideKeyboard, insertText, insertAtCursor, commitComposition, commitPrediction,
   backspace, pasteFromClipboard, submit,
   toggleShift, toggleKanaMode, setMode, cycleMode,
 } = useVirtualKeyboard();
@@ -228,13 +239,25 @@ const candidates = computed<string[]>(() => {
   return [];
 });
 
+// ── 联想 prediction logic ──
+const predictions = computed<string[]>(() => {
+  if (keyboardMode.value !== "cn") return [];
+  if (composing.value) return []; // Don't show predictions while typing pinyin
+  if (!lastCommitted.value) return [];
+  return getPredictions(lastCommitted.value);
+});
+
 const showCandidateBar = computed(() =>
   (keyboardMode.value === "cn" || keyboardMode.value === "jp") && composing.value.length > 0
 );
 
-// Show number quick bar when CN/JP mode and not currently composing
+const showPredictionBar = computed(() =>
+  keyboardMode.value === "cn" && !composing.value && predictions.value.length > 0
+);
+
+// Show number quick bar when CN/JP mode, not composing, and no predictions
 const showNumBar = computed(() =>
-  (keyboardMode.value === "cn" || keyboardMode.value === "jp") && !composing.value
+  (keyboardMode.value === "cn" || keyboardMode.value === "jp") && !composing.value && !showPredictionBar.value
 );
 
 // Auto-commit JP kana when input completes
@@ -284,9 +307,11 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 /* ── Candidate bar ── */
 .vk-candidates {
   display: flex;
+  flex-wrap: nowrap;
   gap: 6px;
   padding: 4px 8px;
   overflow-x: auto;
+  overflow-y: hidden;
   min-height: 40px;
   align-items: center;
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
@@ -297,6 +322,7 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 }
 
 .vk-candidates::-webkit-scrollbar {
+  width: 4px;
   height: 4px;
 }
 
@@ -336,6 +362,29 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 
 .vk-candidate--num:active {
   background: color-mix(in srgb, var(--md-sys-color-primary) 28%, transparent);
+}
+
+/* ── Prediction (联想) bar ── */
+.vk-candidates--predict {
+  border-bottom: 1px solid var(--md-sys-color-tertiary-container, var(--md-sys-color-outline-variant));
+}
+
+.vk-predict-label {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--md-sys-color-tertiary, var(--md-sys-color-primary));
+  font-weight: 600;
+  padding: 4px 6px;
+  opacity: 0.7;
+}
+
+.vk-candidate--predict {
+  background: var(--md-sys-color-tertiary-container, var(--md-sys-color-surface-container-high));
+  color: var(--md-sys-color-on-tertiary-container, var(--md-sys-color-on-surface));
+}
+
+.vk-candidate--predict:active {
+  background: color-mix(in srgb, var(--md-sys-color-tertiary, var(--md-sys-color-primary)) 40%, transparent);
 }
 
 .vk-composing {

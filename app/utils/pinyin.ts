@@ -100,7 +100,7 @@ export function getCandidates(pinyin: string): string[] {
     add(splitCommonRare(pinyinMap.get(py)!).rare);
   }
 
-  return results.slice(0, 24);
+  return results.slice(0, 48);
 }
 
 export function getExactCandidates(pinyin: string): string[] {

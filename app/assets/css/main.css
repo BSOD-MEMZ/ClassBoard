@@ -17,6 +17,11 @@ body {
   color: var(--md-sys-color-on-surface, #1c1b1f);
   -webkit-user-select: none;
   user-select: none;
+  /* Prevent layout shifts on low-end devices */
+  overflow-x: hidden;
+  /* GPU-friendly: promote to own layer for wallpaper background */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 body {
@@ -54,6 +59,7 @@ textarea {
   line-height: 1;
 }
 
+/* GPU-composited rise-in animation — avoids layout recalculation */
 @keyframes rise-in {
   from {
     transform: translateY(14px) scale(0.98);
@@ -65,8 +71,16 @@ textarea {
   }
 }
 
+/* ── Performance: off-screen cards skip paint via content-visibility ── */
+.block {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
+  /* Layout/style isolation — prevents card changes from cascading */
+  contain: layout style;
+}
+
 /* Widget card bg transparency — text & content stay fully opaque */
-/* Card shadows toned down to minimal */
+/* Use pre-computed static colors instead of color-mix() for low-end GPUs */
 .page-body m3e-card {
   --_widget-alpha: calc(var(--widget-opacity, 1) * 100%);
   --m3e-elevated-card-container-color: color-mix(
