@@ -58,6 +58,7 @@ export const defaultConfig: AppConfig = {
     rssCard: true,
   },
   kioskMode: false,
+  webViewSandbox: false,
 };
 
 export const weatherCodeMap: Record<number, string> = {

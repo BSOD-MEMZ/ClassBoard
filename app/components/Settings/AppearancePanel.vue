@@ -94,6 +94,26 @@
         启动时自动进入全屏，适合班牌长期展示
       </div>
 
+      <!-- WebView 沙盒 -->
+      <div class="section-divider">
+        <span class="section-title">应用内浏览器</span>
+      </div>
+
+      <div class="row">
+        <span class="row-label">
+          <Icon name="material-symbols:shield-lock-outline" class="label-icon" />
+          WebView 沙盒
+        </span>
+        <m3e-switch
+          :selected="modelValue.webViewSandbox"
+          @click="$emit('update:modelValue', { ...modelValue, webViewSandbox: !modelValue.webViewSandbox })"
+        />
+      </div>
+      <div class="kiosk-hint">
+        <Icon name="material-symbols:info" class="hint-icon" />
+        启用后阻止内嵌网页弹出新标签页，避免跳出班牌界面
+      </div>
+
       <!-- 导航栏样式 -->
       <div class="section-divider">
         <span class="section-title">导航栏</span>
@@ -174,6 +194,7 @@ interface AppearanceDraft {
   navStyle: string;
   dashboardVisible: DashboardVisibility;
   kioskMode: boolean;
+  webViewSandbox: boolean;
 }
 const props = defineProps<{ modelValue: AppearanceDraft; isFullscreen: boolean }>();
 const emit = defineEmits<{

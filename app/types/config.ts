@@ -33,6 +33,8 @@ export interface AppConfig {
   rssUrl: string;
   dashboardVisible: DashboardVisibility;
   kioskMode: boolean;
+  /** 启用 WebView 沙盒，阻止内嵌网页弹出新标签页 */
+  webViewSandbox: boolean;
 }
 
 export interface SettingsSection {

@@ -21,6 +21,7 @@
             navStyle: draft.navStyle,
             dashboardVisible: draft.dashboardVisible,
             kioskMode: draft.kioskMode,
+            webViewSandbox: draft.webViewSandbox,
           }"
           :is-fullscreen="isFullscreen"
           @update:model-value="updateAppearance"
@@ -274,6 +275,7 @@ const draft = reactive({
   rssUrl: cfg.value.rssUrl || "",
   dashboardVisible: { ...cfg.value.dashboardVisible },
   kioskMode: cfg.value.kioskMode ?? false,
+  webViewSandbox: cfg.value.webViewSandbox ?? false,
 });
 
 // Fields that map 1:1 between config and draft (same type)
@@ -281,7 +283,7 @@ const DIRECT_FIELDS = [
   "schoolName", "classroomName", "themeMode", "themeColor",
   "weatherEnabled", "weatherCity", "csesRaw", "scheduleFile",
   "wallpaper", "widgetOpacity", "navStyle", "rssEnabled", "rssUrl",
-  "kioskMode",
+  "kioskMode", "webViewSandbox",
 ] as const;
 
 function syncFromConfig() {
@@ -317,6 +319,7 @@ function updateAppearance(val: {
   navStyle?: string;
   dashboardVisible?: Record<string, boolean>;
   kioskMode?: boolean;
+  webViewSandbox?: boolean;
 }) {
   draft.themeMode = val.themeMode as AppConfig["themeMode"];
   draft.themeColor = val.themeColor;
@@ -325,6 +328,7 @@ function updateAppearance(val: {
   if (val.navStyle !== undefined) draft.navStyle = val.navStyle as AppConfig["navStyle"];
   if (val.dashboardVisible !== undefined) draft.dashboardVisible = val.dashboardVisible as AppConfig["dashboardVisible"];
   if (val.kioskMode !== undefined) draft.kioskMode = val.kioskMode;
+  if (val.webViewSandbox !== undefined) draft.webViewSandbox = val.webViewSandbox;
 }
 
 function updateBasic(val: {
