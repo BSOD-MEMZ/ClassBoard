@@ -8,12 +8,19 @@
       <m3e-button variant="text" @click="$emit('reset-settings')"
         >恢复默认</m3e-button
       >
+      <m3e-button variant="text" @click="refreshPage"
+        >刷新网页</m3e-button
+      >
     </div>
   </m3e-card>
 </template>
 
 <script setup lang="ts">
 defineEmits<{ "export-settings": []; "reset-settings": [] }>();
+
+function refreshPage() {
+  location.reload();
+}
 </script>
 
 <style scoped>
