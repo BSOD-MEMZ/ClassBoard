@@ -14,8 +14,23 @@ const CACHE_TTL = 30_000; // 30s cache, so editing the JSON takes effect quickly
 
 async function loadUsers(): Promise<User[]> {
   if (usersCache && Date.now() - cacheTime < CACHE_TTL) return usersCache;
-  const usersPath = join(process.cwd(), "server", "data", "users.json");
-  const raw = await readFile(usersPath, "utf-8");
+
+  let raw: string | null = null;
+
+  // Try Nitro serverAssets (works in production)
+  try {
+    const storage = useStorage("assets:server-data");
+    raw = await storage.getItem<string>("users.json");
+  } catch {
+    // serverAssets not available (dev mode)
+  }
+
+  // Fallback: direct file read via process.cwd() (works in dev)
+  if (!raw) {
+    const usersPath = join(process.cwd(), "server", "data", "users.json");
+    raw = await readFile(usersPath, "utf-8");
+  }
+
   const data = JSON.parse(raw);
   usersCache = (data.users || []) as User[];
   cacheTime = Date.now();
