@@ -40,6 +40,12 @@ if (import.meta.client) {
 }
 
 export function useAuth() {
+  /** Whether current user is admin or teacher (has elevated privileges). */
+  const isAdminOrTeacher = computed(() => {
+    const role = currentUser.value?.role;
+    return role === "admin" || role === "teacher";
+  });
+
   /** Query card without logging in — returns user info if valid. */
   async function lookupCard(cardId: string): Promise<{ ok: boolean; message: string; user?: AuthUser }> {
     if (import.meta.server) return { ok: false, message: "仅在客户端可用" };
@@ -89,6 +95,7 @@ export function useAuth() {
     loggedIn,
     currentUser,
     isPermanent,
+    isAdminOrTeacher,
     lookupCard,
     confirmLogin,
     logout,

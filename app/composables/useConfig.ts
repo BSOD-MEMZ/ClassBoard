@@ -57,8 +57,8 @@ export const defaultConfig: AppConfig = {
     feedCard: true,
     rssCard: true,
   },
-  kioskMode: false,
-  webViewSandbox: false,
+  kioskMode: true,
+  webViewSandbox: true,
   keyboardType: "ggboard",
 };
 

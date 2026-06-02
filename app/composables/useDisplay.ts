@@ -7,6 +7,9 @@ const screenOff = ref(false);
 const isFullscreen = ref(false);
 const fakeDevEnabled = ref(false);
 const modelTapCount = ref(0);
+let fullscreenLocked = false;
+let fullscreenChangeHandler: (() => void) | null = null;
+let escKeyHandler: ((e: KeyboardEvent) => void) | null = null;
 
 export const themeColor = ref(defaultConfig.themeColor);
 export const themeScheme = ref<"light" | "dark" | "auto">("auto");
@@ -75,6 +78,8 @@ export function useDisplay() {
         })
         .catch(() => {});
     } else {
+      // Block exit if fullscreen is locked (kiosk mode without admin)
+      if (fullscreenLocked) return;
       document
         .exitFullscreen()
         .then(() => {
@@ -83,6 +88,54 @@ export function useDisplay() {
         .catch(() => {
           isFullscreen.value = false;
         });
+    }
+  }
+
+  /** Lock fullscreen — re-enter if user tries to exit (kiosk mode). */
+  function lockFullscreen(): void {
+    if (import.meta.server) return;
+    fullscreenLocked = true;
+    // Auto-enter fullscreen
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        isFullscreen.value = true;
+      }).catch(() => {});
+    }
+    // Watch for fullscreen exit and re-enter
+    if (!fullscreenChangeHandler) {
+      fullscreenChangeHandler = () => {
+        if (fullscreenLocked && !document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          isFullscreen.value = true;
+        } else if (!fullscreenLocked && !document.fullscreenElement) {
+          isFullscreen.value = false;
+        }
+      };
+      document.addEventListener("fullscreenchange", fullscreenChangeHandler);
+    }
+    // Block Escape key
+    if (!escKeyHandler) {
+      escKeyHandler = (e: KeyboardEvent) => {
+        if (e.key === "Escape" && fullscreenLocked) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      };
+      document.addEventListener("keydown", escKeyHandler, true);
+    }
+  }
+
+  /** Unlock fullscreen — allow user to exit. */
+  function unlockFullscreen(): void {
+    if (import.meta.server) return;
+    fullscreenLocked = false;
+    if (fullscreenChangeHandler) {
+      document.removeEventListener("fullscreenchange", fullscreenChangeHandler);
+      fullscreenChangeHandler = null;
+    }
+    if (escKeyHandler) {
+      document.removeEventListener("keydown", escKeyHandler, true);
+      escKeyHandler = null;
     }
   }
 
@@ -114,6 +167,8 @@ export function useDisplay() {
     setupMediaListener,
     cleanupMediaListener,
     toggleFullscreen,
+    lockFullscreen,
+    unlockFullscreen,
     powerOffScreen,
     wakeScreen,
     onDeviceModelTap,

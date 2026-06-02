@@ -72,10 +72,14 @@
 
       <!-- 全屏按钮 -->
       <div class="actions">
-        <m3e-button variant="elevated" toggle @click="$emit('toggle-fullscreen')">
+        <m3e-button variant="elevated" toggle :disabled="!isAdmin" @click="$emit('toggle-fullscreen')">
           <Icon slot="icon" :name="`material-symbols:${isFullscreen ? 'fullscreen-exit' : 'fullscreen'}`" />
           {{ isFullscreen ? "退出全屏" : "全屏显示" }}
         </m3e-button>
+        <span v-if="!isAdmin" class="lock-hint">
+          <Icon name="material-symbols:lock" class="hint-icon" />
+          需要管理员登录
+        </span>
       </div>
 
       <!-- Kiosk 模式 -->
@@ -86,12 +90,17 @@
         </span>
         <m3e-switch
           :selected="modelValue.kioskMode"
-          @click="$emit('update:modelValue', { ...modelValue, kioskMode: !modelValue.kioskMode })"
+          :disabled="!isAdmin"
+          @click="isAdmin && $emit('update:modelValue', { ...modelValue, kioskMode: !modelValue.kioskMode })"
         />
       </div>
       <div v-if="modelValue.kioskMode" class="kiosk-hint">
         <Icon name="material-symbols:info" class="hint-icon" />
         启动时自动进入全屏，适合班牌长期展示
+      </div>
+      <div v-if="!isAdmin" class="lock-hint">
+        <Icon name="material-symbols:lock" class="hint-icon" />
+        需要管理员登录才能修改
       </div>
 
       <!-- WebView 沙盒 -->
@@ -106,12 +115,17 @@
         </span>
         <m3e-switch
           :selected="modelValue.webViewSandbox"
-          @click="$emit('update:modelValue', { ...modelValue, webViewSandbox: !modelValue.webViewSandbox })"
+          :disabled="!isAdmin"
+          @click="isAdmin && $emit('update:modelValue', { ...modelValue, webViewSandbox: !modelValue.webViewSandbox })"
         />
       </div>
       <div class="kiosk-hint">
         <Icon name="material-symbols:info" class="hint-icon" />
-        启用后阻止内嵌网页弹出新标签页，避免跳出班牌界面
+        启用后阻止内嵌网页弹出新标签页，避免跳出班牌界面，规避老师检查
+      </div>
+      <div v-if="!isAdmin" class="lock-hint">
+        <Icon name="material-symbols:lock" class="hint-icon" />
+        需要管理员登录才能修改
       </div>
 
       <!-- 导航栏样式 -->
@@ -196,7 +210,7 @@ interface AppearanceDraft {
   kioskMode: boolean;
   webViewSandbox: boolean;
 }
-const props = defineProps<{ modelValue: AppearanceDraft; isFullscreen: boolean }>();
+const props = defineProps<{ modelValue: AppearanceDraft; isFullscreen: boolean; isAdmin?: boolean }>();
 const emit = defineEmits<{
   "update:modelValue": [value: AppearanceDraft];
   "toggle-fullscreen": [];
@@ -324,6 +338,16 @@ function selectWallpaper(name: string): void {
   font-size: var(--md3-body-medium);
   color: var(--md-sys-color-on-surface-variant);
   line-height: 1.4;
+}
+
+.lock-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: var(--md3-body-small);
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.7;
 }
 
 .hint-icon {

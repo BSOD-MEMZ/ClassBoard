@@ -285,7 +285,8 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 .vk-overlay {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: 99999;
+  pointer-events: auto;
   display: flex;
   align-items: flex-end;
   justify-content: center;

@@ -103,8 +103,6 @@
         </m3e-nav-bar>
       </footer>
 
-      <PowerFab @click="powerOffScreen" />
-
       <NotificationCenter />
 
       <!-- Screen filter overlays (pointer-events: none — don't block interaction) -->
@@ -118,11 +116,13 @@
         class="screen-eyecare-overlay"
       ></div>
 
-      <div
-        v-if="screenOff"
-        class="screen-off-overlay"
-        @click="wakeScreen"
-      ></div>
+      <Transition name="screen-off-fade">
+        <div
+          v-if="screenOff"
+          class="screen-off-overlay"
+          @click="wakeScreen"
+        ></div>
+      </Transition>
     </div>
   </ClientOnly>
 </template>
@@ -134,8 +134,8 @@ import { loadConfig, saveConfig } from "@/composables/useConfig";
 import { useNotificationCenter } from "@/composables/useNotificationCenter";
 import { useScreenFilter } from "@/composables/useScreenFilter";
 import { useAudioMute } from "@/composables/useAudioMute";
+import { useAuth } from "@/composables/useAuth";
 import NotificationCenter from "@/components/Shared/NotificationCenter.vue";
-import PowerFab from "@/components/Dashboard/PowerFab.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -157,18 +157,25 @@ const { panelOpen, dragProgress, open: openNotif, close: closeNotif, setTiles, s
 const { brightness, eyeCare } = useScreenFilter();
 const { toggleEyeCare } = useScreenFilter();
 const { audioMuted, toggleMute } = useAudioMute();
+const { isAdminOrTeacher } = useAuth();
 
 // ── Notification Center: quick tiles (reactive to fullscreen state) ──
 function buildTiles() {
   const cfg = loadConfig();
-  setTiles([
-    {
+  const tiles: any[] = [];
+
+  // Fullscreen tile only when admin/teacher is logged in (or kiosk mode disabled)
+  if (isAdminOrTeacher.value || !cfg.kioskMode) {
+    tiles.push({
       key: "fullscreen",
       label: isFullscreen.value ? "退出全屏" : "全屏",
       icon: isFullscreen.value ? "material-symbols:fullscreen-exit" : "material-symbols:fullscreen",
       active: isFullscreen.value,
       action: () => toggleFullscreen(),
-    },
+    });
+  }
+
+  tiles.push(
     {
       key: "theme",
       label: cfg.themeMode === "dark" ? "深色模式" : "浅色模式",
@@ -218,11 +225,13 @@ function buildTiles() {
       icon: "material-symbols:refresh",
       action: () => location.reload(),
     },
-  ]);
+  );
+  setTiles(tiles);
 }
 buildTiles();
-// Rebuild tiles whenever fullscreen state toggles
+// Rebuild tiles whenever fullscreen state or auth state changes
 watch(isFullscreen, () => buildTiles());
+watch(isAdminOrTeacher, () => buildTiles());
 
 // ── Gesture: swipe/pull down from top to open notification center ──
 if (import.meta.client) {
@@ -587,12 +596,24 @@ html[data-nav-style="pill"] .page-body {
   align-items: flex-end;
   justify-content: center;
   padding: 20px;
+}
+
+/* Screen-off transition */
+.screen-off-fade-enter-active {
   animation: screen-off-fade-in 0.3s ease-out forwards;
+}
+.screen-off-fade-leave-active {
+  animation: screen-off-fade-out 0.5s ease-in forwards;
 }
 
 @keyframes screen-off-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
+}
+
+@keyframes screen-off-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
 /* ── Screen filter overlays (brightness dim + eye-care warm) ── */

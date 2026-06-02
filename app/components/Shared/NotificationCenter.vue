@@ -244,10 +244,24 @@ function endDrag(): void {
   transition: opacity 220ms ease-out;
 }
 .shade-slide-leave-active {
-  transition: opacity 180ms ease-in;
+  transition: opacity 200ms ease-in;
 }
 .shade-slide-enter-from,
 .shade-slide-leave-to {
   opacity: 0;
+}
+
+/* Panel slide: enter from top, leave to top */
+.shade-slide-enter-active .notif-panel {
+  transition: transform 260ms cubic-bezier(0.0, 0.0, 0.2, 1);
+}
+.shade-slide-leave-active .notif-panel {
+  transition: transform 200ms cubic-bezier(0.4, 0.0, 1, 1);
+}
+.shade-slide-enter-from .notif-panel {
+  transform: translateY(-100%);
+}
+.shade-slide-leave-to .notif-panel {
+  transform: translateY(-100%);
 }
 </style>

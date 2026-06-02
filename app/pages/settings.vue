@@ -24,6 +24,7 @@
             webViewSandbox: draft.webViewSandbox,
           }"
           :is-fullscreen="isFullscreen"
+          :is-admin="isAdminOrTeacher"
           @update:model-value="updateAppearance"
           @toggle-fullscreen="toggleFullscreen"
         />
@@ -94,21 +95,23 @@
               <m3e-button-group variant="connected">
                 <m3e-button
                   :variant="draft.keyboardType === 'ggboard' ? 'filled' : 'tonal'"
-                  @click="draft.keyboardType = 'ggboard'"
+                  :disabled="!isAdminOrTeacher"
+                  @click="isAdminOrTeacher && (draft.keyboardType = 'ggboard')"
                 >
-                  GGBoard（内置）
+                  GGBoard
                 </m3e-button>
                 <m3e-button
                   :variant="draft.keyboardType === 'system' ? 'filled' : 'tonal'"
-                  @click="draft.keyboardType = 'system'"
+                  :disabled="!isAdminOrTeacher"
+                  @click="isAdminOrTeacher && (draft.keyboardType = 'system')"
                 >
                   系统键盘
                 </m3e-button>
               </m3e-button-group>
             </div>
-            <div class="kiosk-hint">
-              <Icon name="material-symbols:info" class="hint-icon" />
-              选择「GGBoard」使用内置虚拟键盘阻止系统键盘弹出；选择「系统键盘」将使用 Chrome 自带输入法
+            <div v-if="!isAdminOrTeacher" class="lock-hint">
+              <Icon name="material-symbols:lock" class="hint-icon" />
+              需要管理员登录才能修改输入法设置
             </div>
           </div>
         </m3e-card>
@@ -184,7 +187,7 @@ const prevSection = ref<string>("root");
 const slideDir = ref<"forward" | "back">("forward");
 const xxtsoftDialogOpen = ref(false);
 const loginModalOpen = ref(false);
-const { loggedIn, currentUser, isPermanent, logout } = useAuth();
+const { loggedIn, currentUser, isPermanent, isAdminOrTeacher, logout } = useAuth();
 
 const transitionName = computed(() =>
   slideDir.value === "forward" ? "slide-forward" : "slide-back",
@@ -570,6 +573,22 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 12px;
   padding-bottom: 120px;
+}
+
+/* Lock hint for restricted settings */
+.lock-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: var(--md3-body-small);
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.7;
+}
+
+.lock-hint .hint-icon {
+  font-size: 16px;
+  flex-shrink: 0;
 }
 
 /* ── Profile card ── */

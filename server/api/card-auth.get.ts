@@ -1,5 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 
 interface User {
   cardId: string;
@@ -12,26 +14,54 @@ let usersCache: User[] | null = null;
 let cacheTime = 0;
 const CACHE_TTL = 30_000; // 30s cache, so editing the JSON takes effect quickly
 
+async function tryReadFile(path: string): Promise<string | null> {
+  try {
+    return await readFile(path, "utf-8");
+  } catch {
+    return null;
+  }
+}
+
 async function loadUsers(): Promise<User[]> {
   if (usersCache && Date.now() - cacheTime < CACHE_TTL) return usersCache;
 
-  let raw: string | null = null;
+  let data: { users?: User[] } | null = null;
 
-  // Try Nitro serverAssets (works in production)
+  // Strategy 1: Nitro serverAssets storage (dev & production)
   try {
-    const storage = useStorage("assets:server-data");
-    raw = await storage.getItem<string>("users.json");
-  } catch {
-    // serverAssets not available (dev mode)
+    if (typeof useStorage === "function") {
+      const storage = useStorage("assets:server-data");
+      const item = await storage.getItem("users.json");
+      if (item) {
+        // Nitro may auto-parse JSON, item can be string or object
+        data = typeof item === "string" ? JSON.parse(item) : item;
+      }
+    }
+  } catch { /* useStorage unavailable */ }
+
+  // Strategy 2: process.cwd() based paths (fallback)
+  if (!data) {
+    const cwd = process.cwd();
+    const raw = await tryReadFile(join(cwd, "server", "data", "users.json"))
+             || await tryReadFile(join(cwd, "data", "users.json"))
+             || await tryReadFile(join(cwd, ".output", "server", "data", "users.json"))
+             || await tryReadFile(join(cwd, ".output", "public", "_nitro", "assets", "server-data", "users.json"))
+             || await tryReadFile(join(cwd, "public", "_nitro", "assets", "server-data", "users.json"));
+    if (raw) data = JSON.parse(raw);
   }
 
-  // Fallback: direct file read via process.cwd() (works in dev)
-  if (!raw) {
-    const usersPath = join(process.cwd(), "server", "data", "users.json");
-    raw = await readFile(usersPath, "utf-8");
+  // Strategy 3: import.meta.url relative (last resort)
+  if (!data) {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const raw = await tryReadFile(join(__dirname, "..", "data", "users.json"));
+    if (raw) data = JSON.parse(raw);
   }
 
-  const data = JSON.parse(raw);
+  if (!data) {
+    throw createError({ statusCode: 500, statusMessage: "Users data not found" });
+  }
+
   usersCache = (data.users || []) as User[];
   cacheTime = Date.now();
   return usersCache;

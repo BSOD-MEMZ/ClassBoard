@@ -42,6 +42,7 @@ import { useFeed } from "@/composables/useFeed";
 import { useRss } from "@/composables/useRss";
 import { useDisplay } from "@/composables/useDisplay";
 import { nowPlaying } from "@/composables/useNowPlaying";
+import { useAuth } from "@/composables/useAuth";
 import { useWallpaper } from "@/composables/useWallpaper";
 import { useRipple } from "@/composables/useRipple";
 import { dayLabels } from "@/utils/schedule";
@@ -58,7 +59,8 @@ const {
 } = useWeather();
 const { feedData, startFeedTimer, stopFeedTimer } = useFeed();
 const { rssData, startRssTimer, stopRssTimer } = useRss();
-const { applyTheme, setupMediaListener, cleanupMediaListener } = useDisplay();
+const { applyTheme, setupMediaListener, cleanupMediaListener, lockFullscreen, unlockFullscreen } = useDisplay();
+const { isAdminOrTeacher } = useAuth();
 const { wallpapers, wallpaperUrlForName, wallpaperThemeColor, applyWallpaper } = useWallpaper();
 const { triggerRipple } = useRipple();
 
@@ -138,13 +140,28 @@ onMounted(() => {
   if (config.value.rssEnabled) {
     startRssTimer();
   }
+
+  // Kiosk mode: lock fullscreen unless admin/teacher is logged in
+  applyKioskLock();
 });
+
+// Watch auth state to lock/unlock fullscreen when logging in/out
+watch(isAdminOrTeacher, () => applyKioskLock());
+
+function applyKioskLock(): void {
+  if (config.value.kioskMode && !isAdminOrTeacher.value) {
+    lockFullscreen();
+  } else {
+    unlockFullscreen();
+  }
+}
 
 onBeforeUnmount(() => {
   stopWeatherTimer();
   stopFeedTimer();
   stopRssTimer();
   cleanupMediaListener();
+  unlockFullscreen();
 });
 </script>
 

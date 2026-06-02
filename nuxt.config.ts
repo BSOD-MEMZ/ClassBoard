@@ -26,7 +26,7 @@ export default defineNuxtConfig({
     compressPublicAssets: { brotli: true, gzip: true },
     minify: true,
     serverAssets: [
-      { baseName: "server-data", dir: "server/data" },
+      { baseName: "server-data", dir: "data" },
     ],
   },
   vite: {
