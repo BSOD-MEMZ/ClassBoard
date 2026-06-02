@@ -62,18 +62,25 @@ export function useVirtualKeyboard() {
     insertAtCursor(text);
     composing.value = "";
     shiftLock.value = false;
-    // Track the last committed character for 联想 prediction
-    if (keyboardMode.value === "cn" && text.length === 1) {
-      lastCommitted.value = text;
+    // Track the last committed character(s) for 联想 prediction
+    if (keyboardMode.value === "cn" && text.length >= 1) {
+      lastCommitted.value = (lastCommitted.value + text).slice(-2);
     }
   }
 
   function commitPrediction(text: string) {
     if (!activeInput) return;
-    insertAtCursor(text);
-    // Keep lastCommitted as the prediction target, so predictions recycle
-    if (text.length === 1) {
-      lastCommitted.value = text;
+    // Strip prefix already committed (e.g. "人" + prediction "人工智能" → insert "工智能")
+    let toInsert = text;
+    if (lastCommitted.value && text.startsWith(lastCommitted.value)) {
+      toInsert = text.slice(lastCommitted.value.length);
+    }
+    if (toInsert) {
+      insertAtCursor(toInsert);
+    }
+    // Track last 2 chars of the full predicted word for chain prediction
+    if (text.length >= 1) {
+      lastCommitted.value = text.slice(-2);
     }
   }
 

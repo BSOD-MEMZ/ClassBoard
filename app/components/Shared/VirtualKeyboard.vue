@@ -18,11 +18,12 @@
           <div v-if="showPredictionBar" class="vk-candidates vk-candidates--predict">
             <span class="vk-predict-label">联想</span>
             <button
-              v-for="(c, idx) in predictions"
+              v-for="(p, idx) in predictions"
               :key="'p-' + idx"
               class="vk-candidate vk-candidate--predict"
-              @click.stop="commitPrediction(c)"
-            >{{ c }}</button>
+              :class="{ 'vk-candidate--word': p.isWord }"
+              @click.stop="commitPrediction(p.text)"
+            >{{ p.text }}</button>
           </div>
           <!-- Number quick-access bar for CN/JP when not composing and no predictions -->
           <div v-if="showNumBar" class="vk-candidates">
@@ -184,7 +185,7 @@
 import { computed, ref, watch } from "vue";
 import { useVirtualKeyboard } from "@/composables/useVirtualKeyboard";
 import { getCandidates } from "@/utils/pinyin";
-import { getPredictions } from "@/utils/predict";
+import { getPredictions, getChainPredictions, type PredictionResult } from "@/utils/predict";
 import { romajiToHiraganaWithSokuon, romajiToKatakana } from "@/utils/kana";
 
 const {
@@ -240,11 +241,20 @@ const candidates = computed<string[]>(() => {
 });
 
 // ── 联想 prediction logic ──
-const predictions = computed<string[]>(() => {
+const predictions = computed<PredictionResult[]>(() => {
   if (keyboardMode.value !== "cn") return [];
   if (composing.value) return []; // Don't show predictions while typing pinyin
   if (!lastCommitted.value) return [];
-  return getPredictions(lastCommitted.value);
+
+  // Try chain prediction first (last 2 chars → multi-char words)
+  const chainKey = lastCommitted.value.slice(-2);
+  if (chainKey.length >= 2) {
+    const chainResults = getChainPredictions(chainKey, 4);
+    if (chainResults.length > 0) return chainResults;
+  }
+
+  // Fall back to single-char prediction
+  return getPredictions(lastCommitted.value.slice(-1), 10);
 });
 
 const showCandidateBar = computed(() =>
@@ -386,6 +396,17 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 
 .vk-candidate--predict:active {
   background: color-mix(in srgb, var(--md-sys-color-tertiary, var(--md-sys-color-primary)) 40%, transparent);
+}
+
+.vk-candidate--word {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.vk-candidate--word:active {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 45%, transparent);
 }
 
 .vk-composing {
