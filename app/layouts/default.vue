@@ -16,7 +16,7 @@
         >
           <Icon name="material-symbols:arrow-back" class="icon-glyph" />
         </m3e-icon-button>
-        <span slot="title">{{ barTitle }}</span>
+        <span slot="title" class="bar-title" @dblclick="openNotif">{{ barTitle }}</span>
 
         <!-- 非首页时在标题栏右侧显示时间和课程信息 -->
         <div
@@ -448,6 +448,11 @@ watch(() => route.fullPath, () => {
   width: 100%;
   z-index: 28;
   border-radius: 0;
+}
+
+.bar-title {
+  cursor: default;
+  user-select: none;
 }
 
 .nav-back-btn {
