@@ -128,13 +128,6 @@ onMounted(() => {
     () => config.value.themeColor,
   );
 
-  // Kiosk mode: auto-enter fullscreen on startup
-  if (config.value.kioskMode) {
-    requestAnimationFrame(() => {
-      document.documentElement.requestFullscreen().catch(() => {});
-    });
-  }
-
   startWeatherTimer(
     config.value.weatherLatitude,
     config.value.weatherLongitude,

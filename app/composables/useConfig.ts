@@ -59,6 +59,7 @@ export const defaultConfig: AppConfig = {
   },
   kioskMode: false,
   webViewSandbox: false,
+  keyboardType: "ggboard",
 };
 
 export const weatherCodeMap: Record<number, string> = {

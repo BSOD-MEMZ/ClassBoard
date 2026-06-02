@@ -50,6 +50,9 @@
 
     </div>
     <div slot="actions" end>
+      <m3e-icon-button variant="standard" toggle :selected="muted" @click="toggleMute">
+        <Icon :name="muted ? 'material-symbols:volume-off' : 'material-symbols:volume-up'" />
+      </m3e-icon-button>
       <m3e-button v-if="state === 'confirm'" variant="text" @click="backToWaiting">取消</m3e-button>
       <m3e-button v-else variant="text" @click="handleCancel">{{ state === 'success' ? '关闭' : '取消' }}</m3e-button>
     </div>
@@ -79,6 +82,22 @@ let countdownTimer: ReturnType<typeof setInterval> | null = null;
 // Audio
 let bgmAudio: HTMLAudioElement | null = null;
 let readAudio: HTMLAudioElement | null = null;
+const muted = ref(false);
+
+function toggleMute(): void {
+  muted.value = !muted.value;
+  if (muted.value) {
+    stopAllAudio();
+  } else {
+    // Re-enable: restart BGM if dialog is still in waiting state
+    if (state.value === "waiting") playBgm();
+  }
+}
+
+function stopAllAudio(): void {
+  if (bgmAudio) { bgmAudio.pause(); bgmAudio.currentTime = 0; }
+  if (readAudio) { readAudio.pause(); readAudio.currentTime = 0; readAudio = null; }
+}
 
 function roleLabel(role: string): string {
   const map: Record<string, string> = { admin: "管理员", teacher: "教师", student: "学生" };
@@ -86,7 +105,7 @@ function roleLabel(role: string): string {
 }
 
 function playBgm(): void {
-  if (import.meta.server) return;
+  if (import.meta.server || muted.value) return;
   try {
     bgmAudio = new Audio(new URL("@/assets/prism-entry.mp3", import.meta.url).href);
     bgmAudio.loop = true;
@@ -96,11 +115,12 @@ function playBgm(): void {
 }
 
 function stopBgm(): void {
-  if (bgmAudio) { bgmAudio.pause(); bgmAudio.currentTime = 0; bgmAudio = null; }
+  stopAllAudio();
+  bgmAudio = null;
 }
 
 function playReadSound(): void {
-  if (import.meta.server) return;
+  if (import.meta.server || muted.value) return;
   try {
     readAudio = new Audio(new URL("@/assets/read.wav", import.meta.url).href);
     readAudio.volume = 0.6;
@@ -198,6 +218,7 @@ function resetState(): void {
   pendingUser.value = null;
   successMsg.value = "";
   failMsg.value = "";
+  muted.value = false;
   state.value = "waiting";
 }
 

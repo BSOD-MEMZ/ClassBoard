@@ -83,6 +83,38 @@
       </Transition>
 
       <Transition :name="transitionName" appear>
+        <m3e-card v-if="section === 'keyboard'" class="block settings-block" variant="elevated">
+          <div slot="header" class="block-title">语言和输入法</div>
+          <div slot="content" class="form-grid">
+            <div class="row">
+              <span class="row-label">
+                <Icon name="material-symbols:keyboard" class="label-icon" />
+                输入法
+              </span>
+              <m3e-button-group variant="connected">
+                <m3e-button
+                  :variant="draft.keyboardType === 'ggboard' ? 'filled' : 'tonal'"
+                  @click="draft.keyboardType = 'ggboard'"
+                >
+                  GGBoard（内置）
+                </m3e-button>
+                <m3e-button
+                  :variant="draft.keyboardType === 'system' ? 'filled' : 'tonal'"
+                  @click="draft.keyboardType = 'system'"
+                >
+                  系统键盘
+                </m3e-button>
+              </m3e-button-group>
+            </div>
+            <div class="kiosk-hint">
+              <Icon name="material-symbols:info" class="hint-icon" />
+              选择「GGBoard」使用内置虚拟键盘阻止系统键盘弹出；选择「系统键盘」将使用 Chrome 自带输入法
+            </div>
+          </div>
+        </m3e-card>
+      </Transition>
+
+      <Transition :name="transitionName" appear>
         <DeveloperPanel
           v-if="section === 'developer'"
         />
@@ -222,6 +254,13 @@ const sections = computed<SettingsSection[]>(() => [
     enabled: true,
   },
   {
+    key: "keyboard",
+    label: "语言和输入法",
+    icon: "keyboard",
+    description: "内置虚拟键盘或系统输入法",
+    enabled: true,
+  },
+  {
     key: "device",
     label: "关于设备",
     icon: "memory",
@@ -276,6 +315,7 @@ const draft = reactive({
   dashboardVisible: { ...cfg.value.dashboardVisible },
   kioskMode: cfg.value.kioskMode ?? false,
   webViewSandbox: cfg.value.webViewSandbox ?? false,
+  keyboardType: cfg.value.keyboardType ?? "ggboard",
 });
 
 // Fields that map 1:1 between config and draft (same type)
@@ -283,7 +323,7 @@ const DIRECT_FIELDS = [
   "schoolName", "classroomName", "themeMode", "themeColor",
   "weatherEnabled", "weatherCity", "csesRaw", "scheduleFile",
   "wallpaper", "widgetOpacity", "navStyle", "rssEnabled", "rssUrl",
-  "kioskMode", "webViewSandbox",
+  "kioskMode", "webViewSandbox", "keyboardType",
 ] as const;
 
 function syncFromConfig() {

@@ -79,6 +79,13 @@ textarea {
   contain: layout style;
 }
 
+/* ── Register custom properties for smooth CSS transitions (Chrome 132 compat) ── */
+@property --m3e-elevated-card-container-color {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
 /* Widget card bg transparency — text & content stay fully opaque */
 /* Use pre-computed static colors instead of color-mix() for low-end GPUs */
 .page-body m3e-card {

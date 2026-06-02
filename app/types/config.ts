@@ -1,5 +1,6 @@
 export type ThemeMode = "light" | "dark" | "auto";
 export type NavStyle = "fixed" | "pill";
+export type KeyboardType = "ggboard" | "system";
 
 export interface RssPreset {
   label: string;
@@ -35,6 +36,8 @@ export interface AppConfig {
   kioskMode: boolean;
   /** 启用 WebView 沙盒，阻止内嵌网页弹出新标签页 */
   webViewSandbox: boolean;
+  /** 输入法类型：ggboard=内置虚拟键盘，system=系统键盘 */
+  keyboardType: KeyboardType;
 }
 
 export interface SettingsSection {

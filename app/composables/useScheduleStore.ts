@@ -109,7 +109,7 @@ export const classState = computed<ClassState>(() => {
       teacherText: teacherLabel(nextToday.teacher),
       showProgress: show,
       progress: p,
-      progressNote: show ? `即将上课（${remainSec} 秒）` : "",
+      progressNote: show ? `即将上课（${formatDuration(remain)}）` : "",
     };
   }
 

@@ -25,6 +25,9 @@ export default defineNuxtConfig({
   nitro: {
     compressPublicAssets: { brotli: true, gzip: true },
     minify: true,
+    serverAssets: [
+      { baseName: "server-data", dir: "server/data" },
+    ],
   },
   vite: {
     build: {

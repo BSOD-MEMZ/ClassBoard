@@ -18,13 +18,21 @@
         </m3e-icon-button>
         <span slot="title">{{ barTitle }}</span>
 
-        <!-- 非首页时在标题栏右侧显示课程信息 -->
+        <!-- 非首页时在标题栏右侧显示时间和课程信息 -->
         <div
-          v-if="isNotHome && scheduleInfo.text"
+          v-if="isNotHome"
           slot="trailing"
-          class="bar-schedule-info"
+          class="bar-trailing"
         >
-          <span class="bar-schedule-chip" :class="scheduleInfo.chipClass">
+          <span class="bar-time-chip">
+            <Icon name="material-symbols:schedule" class="bar-schedule-icon" />
+            <span class="bar-schedule-label">{{ barClock }}</span>
+          </span>
+          <span
+            v-if="scheduleInfo.text"
+            class="bar-schedule-chip"
+            :class="scheduleInfo.chipClass"
+          >
             <Icon
               :name="scheduleInfo.icon"
               class="bar-schedule-icon"
@@ -97,6 +105,8 @@
 
       <PowerFab @click="powerOffScreen" />
 
+      <NotificationCenter />
+
       <div
         v-if="screenOff"
         class="screen-off-overlay"
@@ -109,7 +119,9 @@
 <script setup lang="ts">
 import { useDisplay } from "@/composables/useDisplay";
 import { useApps } from "@/composables/useApps";
-import { loadConfig } from "@/composables/useConfig";
+import { loadConfig, saveConfig } from "@/composables/useConfig";
+import { useNotificationCenter } from "@/composables/useNotificationCenter";
+import NotificationCenter from "@/components/Shared/NotificationCenter.vue";
 import PowerFab from "@/components/Dashboard/PowerFab.vue";
 
 const route = useRoute();
@@ -125,14 +137,113 @@ watch(navStyle, (style) => {
   }
 }, { immediate: true });
 
-const { screenOff, wakeScreen, powerOffScreen } = useDisplay();
+// ── Composables (must be called before any usage) ──
+const { screenOff, wakeScreen, powerOffScreen, toggleFullscreen, isFullscreen, applyTheme } = useDisplay();
 const { appsView, closeAppTool, activeApp } = useApps();
+const { panelOpen, dragProgress, open: openNotif, close: closeNotif, setTiles, setDragProgress } = useNotificationCenter();
+
+// ── Notification Center: quick tiles (reactive to fullscreen state) ──
+function buildTiles() {
+  const cfg = loadConfig();
+  setTiles([
+    {
+      key: "fullscreen",
+      label: isFullscreen.value ? "退出全屏" : "全屏",
+      icon: isFullscreen.value ? "material-symbols:fullscreen-exit" : "material-symbols:fullscreen",
+      active: isFullscreen.value,
+      action: () => toggleFullscreen(),
+    },
+    {
+      key: "theme",
+      label: cfg.themeMode === "dark" ? "深色" : "浅色",
+      icon: cfg.themeMode === "dark" ? "material-symbols:dark-mode" : "material-symbols:light-mode",
+      active: cfg.themeMode !== "auto",
+      action: () => {
+        const c = loadConfig();
+        const next = c.themeMode === "dark" ? "light" : "dark";
+        applyTheme(next, c.themeColor);
+      },
+    },
+    {
+      key: "screenoff",
+      label: "熄屏",
+      icon: "material-symbols:power-settings-new",
+      action: () => powerOffScreen(),
+    },
+    {
+      key: "sandbox",
+      label: cfg.webViewSandbox ? "沙盒开" : "沙盒关",
+      icon: "material-symbols:shield-lock",
+      active: cfg.webViewSandbox,
+      action: () => {
+        const c = loadConfig();
+        c.webViewSandbox = !c.webViewSandbox;
+        saveConfig(c);
+      },
+    },
+    {
+      key: "refresh",
+      label: "刷新",
+      icon: "material-symbols:refresh",
+      action: () => location.reload(),
+    },
+  ]);
+}
+buildTiles();
+// Rebuild tiles whenever fullscreen state toggles
+watch(isFullscreen, () => buildTiles());
+
+// ── Gesture: swipe/pull down from top to open notification center ──
+if (import.meta.client) {
+  let startY = 0;
+  let active = false;
+
+  function onPointerDown(e: PointerEvent) {
+    if (panelOpen.value) return;
+    if (e.clientY < 40) {
+      startY = e.clientY;
+      active = true;
+      (e.target as HTMLElement)?.setPointerCapture?.(e.pointerId);
+    }
+  }
+
+  function onPointerMove(e: PointerEvent) {
+    if (!active || panelOpen.value) return;
+    const dy = e.clientY - startY;
+    if (dy > 20) {
+      const progress = Math.min(dy / 180, 1);
+      setDragProgress(progress);
+    }
+  }
+
+  function onPointerUp() {
+    if (!active) return;
+    active = false;
+    if (dragProgress.value > 0.4) {
+      openNotif();
+    } else {
+      setDragProgress(0);
+    }
+  }
+
+  document.addEventListener("pointerdown", onPointerDown, { passive: true });
+  document.addEventListener("pointermove", onPointerMove, { passive: true });
+  document.addEventListener("pointerup", onPointerUp);
+}
 
 // ---- Schedule info for app bar trailing slot ----
 // Uses shared schedule store — no separate clock or parsing
 import { todayLessons, scheduleClock } from "@/composables/useScheduleStore";
 
 const isNotHome = computed(() => route.path !== "/");
+
+/** 标题栏紧凑时钟 */
+const barClock = computed(() => {
+  const d = scheduleClock.value;
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+});
 
 /** 紧凑格式化剩余时间（用于标题栏） */
 function compactRemain(ms: number): string {
@@ -246,6 +357,17 @@ useHead({
   ],
   link: [{ rel: "icon", type: "image/png", href: "assets/xxtsoft.png" }],
 });
+
+// Kiosk mode: re-request fullscreen on every route change
+watch(() => route.fullPath, () => {
+  if (import.meta.server) return;
+  const config = loadConfig();
+  if (config.kioskMode && !document.fullscreenElement) {
+    requestAnimationFrame(() => {
+      document.documentElement.requestFullscreen().catch(() => {});
+    });
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
@@ -298,11 +420,27 @@ useHead({
   pointer-events: none;
 }
 
-/* ---- App bar schedule info chip ---- */
-.bar-schedule-info {
+/* ---- App bar trailing info (time + schedule) ---- */
+.bar-trailing {
   display: flex;
   align-items: center;
+  gap: 6px;
   margin-right: 4px;
+}
+
+.bar-time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  background: var(--md-sys-color-surface-container-high, #ece6f0);
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  flex-shrink: 0;
 }
 
 .bar-schedule-chip {
