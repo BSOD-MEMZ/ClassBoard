@@ -16,7 +16,7 @@
         >
           <Icon name="material-symbols:arrow-back" class="icon-glyph" />
         </m3e-icon-button>
-        <span slot="title" class="bar-title" @dblclick="openNotif">{{ barTitle }}</span>
+        <span slot="title" class="bar-title" @click="openNotif">{{ barTitle }}</span>
 
         <!-- 非首页时在标题栏右侧显示时间和课程信息 -->
         <div
@@ -153,7 +153,7 @@ watch(navStyle, (style) => {
 // ── Composables (must be called before any usage) ──
 const { screenOff, wakeScreen, powerOffScreen, toggleFullscreen, isFullscreen, applyTheme } = useDisplay();
 const { appsView, closeAppTool, activeApp } = useApps();
-const { panelOpen, dragProgress, open: openNotif, close: closeNotif, setTiles, setDragProgress } = useNotificationCenter();
+const { panelOpen, dragProgress, open: openNotif, close: closeNotif, setTiles, setDragProgress, finishDrag } = useNotificationCenter();
 const { brightness, eyeCare } = useScreenFilter();
 const { toggleEyeCare } = useScreenFilter();
 const { audioMuted, toggleMute } = useAudioMute();
@@ -236,35 +236,38 @@ watch(isAdminOrTeacher, () => buildTiles());
 // ── Gesture: swipe/pull down from top to open notification center ──
 if (import.meta.client) {
   let startY = 0;
+  let startTime = 0;
   let active = false;
 
   function onPointerDown(e: PointerEvent) {
     if (panelOpen.value) return;
-    if (e.clientY < 40) {
+    // Wider touch zone: top 80px (easier on touch screens)
+    if (e.clientY < 80) {
       startY = e.clientY;
+      startTime = Date.now();
       active = true;
-      e.preventDefault();
     }
   }
 
   function onPointerMove(e: PointerEvent) {
     if (!active || panelOpen.value) return;
     const dy = e.clientY - startY;
-    if (dy > 20) {
+    if (dy > 10) {
       e.preventDefault();
-      const progress = Math.min(dy / 220, 1);
+      // Lighter resistance for easier pulling
+      const progress = Math.min(dy / 180, 1);
       setDragProgress(progress);
     }
   }
 
-  function onPointerUp(e: PointerEvent) {
+  function onPointerUp(_e: PointerEvent) {
     if (!active) return;
     active = false;
-    if (dragProgress.value > 0.35) {
-      openNotif();
-    } else {
-      setDragProgress(0);
-    }
+    const elapsed = Date.now() - startTime;
+    const dy = dragProgress.value * 180;
+    // Fast swipe (quick flick) or dragged far enough → open
+    const isFastSwipe = elapsed < 300 && dy > 30;
+    finishDrag(isFastSwipe || dragProgress.value > 0.25);
   }
 
   document.addEventListener("pointerdown", onPointerDown);

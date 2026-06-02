@@ -11,18 +11,28 @@ export interface QuickTile {
 
 const panelOpen = ref(false);
 const dragProgress = ref(0); // 0-1 for smooth drag animation
+const isDragging = ref(false); // true during touch drag, disables CSS transition
 
 const quickTiles = ref<QuickTile[]>([]);
 
 export function useNotificationCenter() {
   function open(): void {
     panelOpen.value = true;
-    dragProgress.value = 1;
+    // Animate: start from 0, then slide to 1 via CSS transition
+    dragProgress.value = 0;
+    isDragging.value = false;
+    requestAnimationFrame(() => {
+      dragProgress.value = 1;
+    });
   }
 
   function close(): void {
-    panelOpen.value = false;
+    isDragging.value = false;
     dragProgress.value = 0;
+    // Delay hiding the overlay until transition completes
+    setTimeout(() => {
+      if (dragProgress.value === 0) panelOpen.value = false;
+    }, 320);
   }
 
   function toggle(): void {
@@ -30,7 +40,21 @@ export function useNotificationCenter() {
   }
 
   function setDragProgress(p: number): void {
+    isDragging.value = true;
     dragProgress.value = Math.max(0, Math.min(1, p));
+  }
+
+  function finishDrag(shouldOpen: boolean): void {
+    isDragging.value = false;
+    if (shouldOpen) {
+      panelOpen.value = true;
+      dragProgress.value = 1;
+    } else {
+      dragProgress.value = 0;
+      setTimeout(() => {
+        if (dragProgress.value === 0) panelOpen.value = false;
+      }, 320);
+    }
   }
 
   function setTiles(tiles: QuickTile[]): void {
@@ -40,11 +64,13 @@ export function useNotificationCenter() {
   return {
     panelOpen,
     dragProgress,
+    isDragging,
     quickTiles,
     open,
     close,
     toggle,
     setDragProgress,
+    finishDrag,
     setTiles,
   };
 }

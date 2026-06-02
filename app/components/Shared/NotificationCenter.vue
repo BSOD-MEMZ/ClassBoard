@@ -4,6 +4,7 @@
       <div v-if="panelOpen || dragProgress > 0" class="notif-overlay" @click.self="close">
         <div
           class="notif-panel"
+          :class="{ 'notif-panel--sliding': !isDragging }"
           :style="{ transform: `translateY(${(1 - dragProgress) * -100}%)` }"
           @click.stop
         >
@@ -54,7 +55,7 @@ import { useScreenFilter } from "@/composables/useScreenFilter";
 import { scheduleClock } from "@/composables/useScheduleStore";
 import { dayLabels } from "@/utils/schedule";
 
-const { panelOpen, dragProgress, quickTiles, close, setDragProgress } = useNotificationCenter();
+const { panelOpen, dragProgress, isDragging, quickTiles, close, setDragProgress, finishDrag } = useNotificationCenter();
 const { toggleFullscreen, isFullscreen, powerOffScreen } = useDisplay();
 const { brightness: bright, setBrightness } = useScreenFilter();
 
@@ -109,10 +110,9 @@ function endDrag(): void {
   document.removeEventListener("pointermove", onDrag);
   document.removeEventListener("pointerup", endDrag);
   if (dragProgress.value < 0.6) {
-    close();
+    finishDrag(false);
   } else {
-    // Snap back open
-    setDragProgress(1);
+    finishDrag(true);
   }
 }
 </script>
@@ -139,6 +139,11 @@ function endDrag(): void {
   box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25);
   touch-action: none;
   will-change: transform;
+}
+
+/* Smooth slide transition when NOT dragging */
+.notif-panel--sliding {
+  transition: transform 320ms cubic-bezier(0.2, 0.0, 0.0, 1.0);
 }
 
 .notif-header {
