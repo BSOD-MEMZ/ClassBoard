@@ -3,7 +3,7 @@
     <!-- 沙盒警告条 -->
     <div v-if="sandbox && !warningDismissed" class="sandbox-warning">
       <Icon name="material-symbols:shield-lock-outline" class="sandbox-warn-icon" />
-      <span class="sandbox-warn-text">沙盒已启用 — 弹窗和新标签页将被拦截</span>
+      <span class="sandbox-warn-text">ClassDefender 已启用 — 弹窗和新标签页将被拦截</span>
       <m3e-icon-button class="sandbox-warn-close" @click="dismissWarning">
         <Icon name="material-symbols:close" />
       </m3e-icon-button>

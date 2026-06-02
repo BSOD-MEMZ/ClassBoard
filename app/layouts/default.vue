@@ -107,6 +107,17 @@
 
       <NotificationCenter />
 
+      <!-- Screen filter overlays (pointer-events: none — don't block interaction) -->
+      <div
+        v-if="brightness < 1"
+        class="screen-dim-overlay"
+        :style="{ opacity: 1 - brightness }"
+      ></div>
+      <div
+        v-if="eyeCare"
+        class="screen-eyecare-overlay"
+      ></div>
+
       <div
         v-if="screenOff"
         class="screen-off-overlay"
@@ -121,6 +132,8 @@ import { useDisplay } from "@/composables/useDisplay";
 import { useApps } from "@/composables/useApps";
 import { loadConfig, saveConfig } from "@/composables/useConfig";
 import { useNotificationCenter } from "@/composables/useNotificationCenter";
+import { useScreenFilter } from "@/composables/useScreenFilter";
+import { useAudioMute } from "@/composables/useAudioMute";
 import NotificationCenter from "@/components/Shared/NotificationCenter.vue";
 import PowerFab from "@/components/Dashboard/PowerFab.vue";
 
@@ -141,6 +154,9 @@ watch(navStyle, (style) => {
 const { screenOff, wakeScreen, powerOffScreen, toggleFullscreen, isFullscreen, applyTheme } = useDisplay();
 const { appsView, closeAppTool, activeApp } = useApps();
 const { panelOpen, dragProgress, open: openNotif, close: closeNotif, setTiles, setDragProgress } = useNotificationCenter();
+const { brightness, eyeCare } = useScreenFilter();
+const { toggleEyeCare } = useScreenFilter();
+const { audioMuted, toggleMute } = useAudioMute();
 
 // ── Notification Center: quick tiles (reactive to fullscreen state) ──
 function buildTiles() {
@@ -155,7 +171,7 @@ function buildTiles() {
     },
     {
       key: "theme",
-      label: cfg.themeMode === "dark" ? "深色" : "浅色",
+      label: cfg.themeMode === "dark" ? "深色模式" : "浅色模式",
       icon: cfg.themeMode === "dark" ? "material-symbols:dark-mode" : "material-symbols:light-mode",
       active: cfg.themeMode !== "auto",
       action: () => {
@@ -172,14 +188,29 @@ function buildTiles() {
     },
     {
       key: "sandbox",
-      label: cfg.webViewSandbox ? "沙盒开" : "沙盒关",
+      label: cfg.webViewSandbox ? "正在保护" : "启用ClassDefender",
       icon: "material-symbols:shield-lock",
       active: cfg.webViewSandbox,
       action: () => {
         const c = loadConfig();
         c.webViewSandbox = !c.webViewSandbox;
         saveConfig(c);
+        location.reload();
       },
+    },
+    {
+      key: "eyecare",
+      label: "护眼模式",
+      icon: "material-symbols:visibility",
+      active: eyeCare.value,
+      action: () => toggleEyeCare(),
+    },
+    {
+      key: "mute",
+      label: audioMuted.value ? "已静音" : "静音",
+      icon: audioMuted.value ? "material-symbols:volume-off" : "material-symbols:volume-up",
+      active: audioMuted.value,
+      action: () => toggleMute(),
     },
     {
       key: "refresh",
@@ -203,7 +234,7 @@ if (import.meta.client) {
     if (e.clientY < 40) {
       startY = e.clientY;
       active = true;
-      (e.target as HTMLElement)?.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
     }
   }
 
@@ -211,24 +242,26 @@ if (import.meta.client) {
     if (!active || panelOpen.value) return;
     const dy = e.clientY - startY;
     if (dy > 20) {
-      const progress = Math.min(dy / 180, 1);
+      e.preventDefault();
+      const progress = Math.min(dy / 220, 1);
       setDragProgress(progress);
     }
   }
 
-  function onPointerUp() {
+  function onPointerUp(e: PointerEvent) {
     if (!active) return;
     active = false;
-    if (dragProgress.value > 0.4) {
+    if (dragProgress.value > 0.35) {
       openNotif();
     } else {
       setDragProgress(0);
     }
   }
 
-  document.addEventListener("pointerdown", onPointerDown, { passive: true });
-  document.addEventListener("pointermove", onPointerMove, { passive: true });
+  document.addEventListener("pointerdown", onPointerDown);
+  document.addEventListener("pointermove", onPointerMove);
   document.addEventListener("pointerup", onPointerUp);
+  document.addEventListener("pointercancel", onPointerUp);
 }
 
 // ---- Schedule info for app bar trailing slot ----
@@ -558,12 +591,26 @@ html[data-nav-style="pill"] .page-body {
 }
 
 @keyframes screen-off-fade-in {
-  from {
-    opacity: 0;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
-  to {
-    opacity: 1;
-  }
+/* ── Screen filter overlays (brightness dim + eye-care warm) ── */
+.screen-dim-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.screen-eyecare-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(255, 180, 80, 0.18);
+  pointer-events: none;
+  mix-blend-mode: multiply;
 }
 </style>

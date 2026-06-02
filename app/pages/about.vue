@@ -33,7 +33,7 @@
           <div class="author-title">作者信息</div>
           <div class="author-item">
             <span class="author-label">开发者</span>
-            <span class="author-value">2523 @xxt8582753<br>2509 @AbCd</span>
+            <span class="author-value">@xxt8582753<br>@AbCd</span>
           </div>
           <div class="author-item">
             <span class="author-label">技术栈</span>

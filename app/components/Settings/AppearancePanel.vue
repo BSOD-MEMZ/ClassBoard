@@ -102,7 +102,7 @@
       <div class="row">
         <span class="row-label">
           <Icon name="material-symbols:shield-lock-outline" class="label-icon" />
-          WebView 沙盒
+          ClassDefender
         </span>
         <m3e-switch
           :selected="modelValue.webViewSandbox"

@@ -7,10 +7,17 @@
           :style="{ transform: `translateY(${(1 - dragProgress) * -100}%)` }"
           @click.stop
         >
-          <!-- Header: time & date -->
+          <!-- Header: compact time & date (top-left) -->
           <div class="notif-header">
             <div class="notif-time">{{ timeText }}</div>
             <div class="notif-date">{{ dateText }}</div>
+          </div>
+
+          <!-- Brightness slider -->
+          <div class="notif-slider-row">
+            <m3e-slider :min="10" :max="100" step="1" class="notif-bright-slider">
+              <m3e-slider-thumb :value="Math.round(bright * 100)" @change="onBrightnessChange"></m3e-slider-thumb>
+            </m3e-slider>
           </div>
 
           <!-- Quick settings tiles grid -->
@@ -43,15 +50,21 @@
 <script setup lang="ts">
 import { useNotificationCenter } from "@/composables/useNotificationCenter";
 import { useDisplay } from "@/composables/useDisplay";
+import { useScreenFilter } from "@/composables/useScreenFilter";
 import { scheduleClock } from "@/composables/useScheduleStore";
-import { loadConfig } from "@/composables/useConfig";
 import { dayLabels } from "@/utils/schedule";
 
 const { panelOpen, dragProgress, quickTiles, close, setDragProgress } = useNotificationCenter();
 const { toggleFullscreen, isFullscreen, powerOffScreen } = useDisplay();
+const { brightness: bright, setBrightness } = useScreenFilter();
+
+function onBrightnessChange(e: CustomEvent) {
+  const val = Number((e as any).detail?.value ?? e.target?.value ?? 100) / 100;
+  setBrightness(val);
+}
 
 // Only show first 6 tiles (2 rows of 3)
-const visibleTiles = computed(() => quickTiles.value.slice(0, 6));
+const visibleTiles = computed(() => quickTiles.value.slice(0, 8));
 
 const timeText = computed(() => {
   const d = scheduleClock.value;
@@ -129,22 +142,36 @@ function endDrag(): void {
 }
 
 .notif-header {
-  text-align: center;
-  margin-bottom: 16px;
+  text-align: left;
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
 
 .notif-time {
-  font-size: 2.5rem;
-  font-weight: 300;
-  line-height: 1.1;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.2;
   color: var(--md-sys-color-on-surface);
-  letter-spacing: -1px;
 }
 
 .notif-date {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   color: var(--md-sys-color-on-surface-variant);
-  margin-top: 2px;
+  margin-top: 1px;
+}
+
+/* ── Brightness slider (m3e) ── */
+.notif-slider-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 4px 12px;
+}
+
+.notif-bright-slider {
+  flex: 1;
+  --m3e-slider-active-track-color: var(--md-sys-color-primary, #39c5bb);
+  --m3e-slider-inactive-track-color: var(--md-sys-color-surface-container-highest, #e6e0eb);
+  --m3e-slider-thumb-color: var(--md-sys-color-primary, #39c5bb);
 }
 
 .notif-tiles {

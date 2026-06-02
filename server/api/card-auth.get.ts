@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 
 interface User {
   cardId: string;
@@ -13,15 +12,10 @@ let usersCache: User[] | null = null;
 let cacheTime = 0;
 const CACHE_TTL = 30_000; // 30s cache, so editing the JSON takes effect quickly
 
-function getUsersPath(): string {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  return join(__dirname, "..", "data", "users.json");
-}
-
 async function loadUsers(): Promise<User[]> {
   if (usersCache && Date.now() - cacheTime < CACHE_TTL) return usersCache;
-  const raw = await readFile(getUsersPath(), "utf-8");
+  const usersPath = join(process.cwd(), "server", "data", "users.json");
+  const raw = await readFile(usersPath, "utf-8");
   const data = JSON.parse(raw);
   usersCache = (data.users || []) as User[];
   cacheTime = Date.now();
