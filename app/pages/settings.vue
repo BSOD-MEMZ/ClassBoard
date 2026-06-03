@@ -1,6 +1,7 @@
 <template>
   <ClientOnly>
     <section class="view view-settings">
+      <div class="settings-stage">
       <Transition :name="transitionName" appear>
         <SettingsMenu
           v-if="section === 'root'"
@@ -152,6 +153,7 @@
         :visible="loginModalOpen"
         @close="loginModalOpen = false"
       />
+      </div>
     </section>
   </ClientOnly>
 </template>
@@ -575,6 +577,18 @@ onBeforeUnmount(() => {
   padding-bottom: 120px;
 }
 
+/* ── Stage: overlap container so panels slide over each other ── */
+.settings-stage {
+  position: relative;
+  display: grid;
+  grid-template: 1fr / 1fr;
+}
+
+/* All direct children share the same grid cell — overlap during transition */
+.settings-stage > * {
+  grid-area: 1 / 1;
+}
+
 /* Lock hint for restricted settings */
 .lock-hint {
   display: flex;
@@ -640,34 +654,44 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-/* Panel transitions — horizontal slide (internal nav) */
+/* Panel transitions — horizontal slide (internal nav), GPU-friendly (transform+opacity only) */
 .slide-forward-enter-active {
-  animation: slide-fw-enter 300ms cubic-bezier(0.2, 0.0, 0.0, 1.0) both;
+  animation: slide-fw-enter 280ms cubic-bezier(0.05, 0.7, 0.1, 1.0) both;
 }
 .slide-forward-leave-active {
-  animation: slide-fw-leave 220ms cubic-bezier(0.4, 0.0, 1.0, 1.0) both;
+  animation: slide-fw-leave 200ms cubic-bezier(0.3, 0.0, 0.8, 0.15) both;
 }
 .slide-back-enter-active {
-  animation: slide-bk-enter 300ms cubic-bezier(0.2, 0.0, 0.0, 1.0) both;
+  animation: slide-bk-enter 280ms cubic-bezier(0.05, 0.7, 0.1, 1.0) both;
 }
 .slide-back-leave-active {
-  animation: slide-bk-leave 220ms cubic-bezier(0.4, 0.0, 1.0, 1.0) both;
+  animation: slide-bk-leave 200ms cubic-bezier(0.3, 0.0, 0.8, 0.15) both;
 }
 
 @keyframes slide-fw-enter {
-  from { opacity: 0; transform: translateX(48px); }
+  from { opacity: 0; transform: translateX(24px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes slide-fw-leave {
   from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(-48px); }
+  to   { opacity: 0; transform: translateX(-24px); }
 }
 @keyframes slide-bk-enter {
-  from { opacity: 0; transform: translateX(-48px); }
+  from { opacity: 0; transform: translateX(-24px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes slide-bk-leave {
   from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(48px); }
+  to   { opacity: 0; transform: translateX(24px); }
+}
+</style>
+
+<style>
+/* Global override: disable content-visibility on settings panels.
+   Scoped :deep() can't reliably reach through Vue Transition wrappers
+   to child component roots. This prevents the 200px→real-height flash. */
+.settings-stage .block {
+  content-visibility: visible !important;
+  contain-intrinsic-size: auto !important;
 }
 </style>

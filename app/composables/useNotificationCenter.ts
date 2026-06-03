@@ -18,11 +18,13 @@ const quickTiles = ref<QuickTile[]>([]);
 export function useNotificationCenter() {
   function open(): void {
     panelOpen.value = true;
-    // Animate: start from 0, then slide to 1 via CSS transition
     dragProgress.value = 0;
     isDragging.value = false;
+    // Two-frame delay ensures the DOM is painted at 0 before animating to 1
     requestAnimationFrame(() => {
-      dragProgress.value = 1;
+      requestAnimationFrame(() => {
+        dragProgress.value = 1;
+      });
     });
   }
 

@@ -35,7 +35,7 @@
             </button>
           </div>
 
-          <!-- Drag handle -->
+          <!-- Drag handle (bottom) -->
           <div
             class="notif-handle"
             @pointerdown="startDrag"
@@ -64,7 +64,7 @@ function onBrightnessChange(e: CustomEvent) {
   setBrightness(val);
 }
 
-// Only show first 6 tiles (2 rows of 3)
+// Only show first 8 tiles (2 rows of 4)
 const visibleTiles = computed(() => quickTiles.value.slice(0, 8));
 
 const timeText = computed(() => {
@@ -125,8 +125,6 @@ function endDrag(): void {
   background: rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
-  /* GPU layer */
-  will-change: opacity;
 }
 
 .notif-panel {
@@ -138,7 +136,6 @@ function endDrag(): void {
   padding: 16px 16px 12px;
   box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.25);
   touch-action: none;
-  will-change: transform;
 }
 
 /* Smooth slide transition when NOT dragging */

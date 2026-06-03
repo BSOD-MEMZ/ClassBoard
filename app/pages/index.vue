@@ -170,7 +170,5 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 20px;
   animation: rise-in 280ms cubic-bezier(0.0, 0.0, 0.2, 1);
-  /* GPU-composited: transform + opacity only, no layout triggers */
-  will-change: transform, opacity;
 }
 </style>

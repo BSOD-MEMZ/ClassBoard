@@ -34,18 +34,11 @@ function syncTokensToRoot(): void {
   if (import.meta.server || !themeEl.value) return;
   const styles = getComputedStyle(themeEl.value);
   const root = document.documentElement;
-  let synced = false;
   for (const token of ROOT_TOKENS) {
     const value = styles.getPropertyValue(token).trim();
-    if (value) { root.style.setProperty(token, value); synced = true; }
-  }
-  // Retry up to 3 times on slower devices where M3E theme init may be delayed
-  if (!synced && _retries < 3) {
-    _retries++;
-    requestAnimationFrame(() => syncTokensToRoot());
+    if (value) root.style.setProperty(token, value);
   }
 }
-let _retries = 0;
 
 export function useDisplay() {
   function applyTheme(mode?: string, color?: string): void {
@@ -56,7 +49,6 @@ export function useDisplay() {
     themeColor.value = seed;
     themeScheme.value = themeMode;
 
-    _retries = 0;
     nextTick(() => requestAnimationFrame(() => syncTokensToRoot()));
   }
 

@@ -98,16 +98,27 @@ export function normalizeConfig(parsed: Partial<AppConfig> | null): AppConfig {
 
 export function loadConfig(): AppConfig {
   if (import.meta.server) return cloneDefault();
+  // Return cached config when available — avoids repeated JSON.parse
+  if (_cachedConfig) return _cachedConfig;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return cloneDefault();
-    return normalizeConfig(JSON.parse(raw));
+    _cachedConfig = normalizeConfig(JSON.parse(raw));
+    return _cachedConfig;
   } catch {
     return cloneDefault();
   }
 }
 
+/** Invalidate the config cache so the next loadConfig() re-reads from localStorage. */
+export function invalidateConfigCache(): void {
+  _cachedConfig = null;
+}
+
+let _cachedConfig: AppConfig | null = null;
+
 export function saveConfig(config: AppConfig): void {
   if (import.meta.server) return;
+  _cachedConfig = config;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
 }

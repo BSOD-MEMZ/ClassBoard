@@ -356,11 +356,10 @@ watch(keyboardMode, () => { shiftLock.value = false; });
   font-size: 18px;
   font-family: "Noto Sans SC", "Noto Sans CJK SC", sans-serif;
   cursor: pointer;
-  transition: background-color 120ms ease;
 }
 
 .vk-candidate:active {
-  background: color-mix(in srgb, var(--md-sys-color-primary) 40%, var(--md-sys-color-secondary-container));
+  filter: brightness(0.85);
 }
 
 .vk-candidate--num {
@@ -372,7 +371,7 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 }
 
 .vk-candidate--num:active {
-  background: color-mix(in srgb, var(--md-sys-color-primary) 28%, transparent);
+  filter: brightness(0.85);
 }
 
 /* ── Prediction (联想) bar ── */
@@ -395,7 +394,7 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 }
 
 .vk-candidate--predict:active {
-  background: color-mix(in srgb, var(--md-sys-color-tertiary, var(--md-sys-color-primary)) 40%, transparent);
+  filter: brightness(0.85);
 }
 
 .vk-candidate--word {
@@ -406,7 +405,7 @@ watch(keyboardMode, () => { shiftLock.value = false; });
 }
 
 .vk-candidate--word:active {
-  background: color-mix(in srgb, var(--md-sys-color-primary) 45%, transparent);
+  filter: brightness(0.85);
 }
 
 .vk-composing {
@@ -448,11 +447,13 @@ watch(keyboardMode, () => { shiftLock.value = false; });
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 140ms ease, transform 80ms ease;
+  /* Only animate transform (GPU compositor) — no color transitions */
+  transition: transform 80ms ease;
 }
 
+/* Use filter for :active — GPU-only, no color-mix() software path */
 .vk-key:active {
-  background: color-mix(in srgb, var(--md-sys-color-primary) 28%, transparent);
+  filter: brightness(0.82);
   transform: scale(0.93);
 }
 
@@ -562,10 +563,10 @@ watch(keyboardMode, () => { shiftLock.value = false; });
   font-size: 22px;
 }
 
-/* ── Slide transition ── */
+/* ── Slide transition (opacity + transform only — GPU-friendly) ── */
 .kb-slide-enter-active,
 .kb-slide-leave-active {
-  transition: all 220ms cubic-bezier(0.0, 0.0, 0.2, 1);
+  transition: opacity 220ms cubic-bezier(0.0, 0.0, 0.2, 1);
 }
 .kb-slide-enter-active .vk-container,
 .kb-slide-leave-active .vk-container {

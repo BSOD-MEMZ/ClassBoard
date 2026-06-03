@@ -19,9 +19,6 @@ body {
   user-select: none;
   /* Prevent layout shifts on low-end devices */
   overflow-x: hidden;
-  /* GPU-friendly: promote to own layer for wallpaper background */
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 body {
@@ -75,28 +72,20 @@ textarea {
 .block {
   content-visibility: auto;
   contain-intrinsic-size: auto 200px;
-  /* Layout/style isolation — prevents card changes from cascading */
-  contain: layout style;
 }
 
-/* ── Register custom properties for smooth CSS transitions (Chrome 132 compat) ── */
-@property --m3e-elevated-card-container-color {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: transparent;
+/* Chrome < 140 on mobile: content-visibility + Shadow DOM (M3E) causes
+   cards to collapse to 0 height. Disable it entirely on affected browsers. */
+html[data-chrome-legacy] .block {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
 }
 
-/* Widget card bg transparency — text & content stay fully opaque */
-/* Use pre-computed static colors instead of color-mix() for low-end GPUs */
+/* Widget card bg transparency — use opacity (GPU compositing, cheap) instead of
+   color-mix() which triggers software color blending on low-end GPUs. */
 .page-body m3e-card {
-  --_widget-alpha: calc(var(--widget-opacity, 1) * 100%);
-  --m3e-elevated-card-container-color: color-mix(
-    in srgb,
-    var(--md-sys-color-surface-container) var(--_widget-alpha),
-    transparent
-  );
+  opacity: var(--widget-opacity, 1);
   --m3e-elevated-card-container-elevation: 0px 1px 2px 0px rgba(0, 0, 0, 0.08);
-  transition: --m3e-elevated-card-container-color 300ms ease;
 }
 
 m3e-card {

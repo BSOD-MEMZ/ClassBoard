@@ -7,31 +7,32 @@
         centered
         for="pageBody"
         class="app-top-bar"
+        @click="openNotif"
       >
         <m3e-icon-button
           slot="leading"
           class="nav-back-btn"
           :class="{ 'nav-back-btn--hidden': !showBack }"
-          @click="handleBack"
+          @click.stop="handleBack"
         >
           <Icon name="material-symbols:arrow-back" class="icon-glyph" />
         </m3e-icon-button>
-        <span slot="title" class="bar-title" @click="openNotif">{{ barTitle }}</span>
+        <span slot="title" class="bar-title">{{ barTitle }}</span>
 
-        <!-- 非首页时在标题栏右侧显示时间和课程信息 -->
+        <!-- 非首页时在标题栏右侧显示时间和课程信息；首页预留空间避免布局抖动 -->
         <div
-          v-if="isNotHome"
           slot="trailing"
           class="bar-trailing"
+          :class="{ 'bar-trailing--hidden': !isNotHome }"
+          @click.stop
         >
           <span class="bar-time-chip">
             <Icon name="material-symbols:schedule" class="bar-schedule-icon" />
             <span class="bar-schedule-label">{{ barClock }}</span>
           </span>
           <span
-            v-if="scheduleInfo.text"
             class="bar-schedule-chip"
-            :class="scheduleInfo.chipClass"
+            :class="[scheduleInfo.chipClass, { 'bar-schedule-chip--hidden': !scheduleInfo.text }]"
           >
             <Icon
               :name="scheduleInfo.icon"
@@ -413,6 +414,19 @@ watch(() => route.fullPath, () => {
     });
   }
 }, { immediate: true });
+
+// ── Chrome < 140 mobile compatibility fixes ──
+// Chrome 137 on mobile has bugs with content-visibility + Shadow DOM,
+// and mix-blend-mode can cause rendering corruption.
+if (import.meta.client) {
+  const ua = navigator.userAgent;
+  const m = ua.match(/Chrom(?:e|ium)\/(\d+)/);
+  const chromeVer = m?.[1] ? parseInt(m[1], 10) : 0;
+  const isMobile = /Mobi|Android/.test(ua);
+  if (chromeVer > 0 && chromeVer < 140 && isMobile) {
+    document.documentElement.setAttribute("data-chrome-legacy", "");
+  }
+}
 </script>
 
 <style scoped>
@@ -427,9 +441,6 @@ watch(() => route.fullPath, () => {
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 10px;
-  /* GPU-friendly: promote shell to own composite layer */
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 .app-shell.webview-mode {
@@ -478,6 +489,11 @@ watch(() => route.fullPath, () => {
   margin-right: 4px;
 }
 
+/* Hide on home page but keep reserved space to prevent layout shift */
+.bar-trailing--hidden {
+  visibility: hidden;
+}
+
 .bar-time-chip {
   display: inline-flex;
   align-items: center;
@@ -491,6 +507,9 @@ watch(() => route.fullPath, () => {
   background: var(--md-sys-color-surface-container-high, #ece6f0);
   color: var(--md-sys-color-on-surface-variant, #49454f);
   flex-shrink: 0;
+  /* Stable width: HH:MM format is always 5 chars */
+  min-width: 54px;
+  text-align: center;
 }
 
 .bar-schedule-chip {
@@ -503,10 +522,12 @@ watch(() => route.fullPath, () => {
   font-weight: 500;
   line-height: 1.5;
   white-space: nowrap;
-  max-width: 240px;
+  max-width: 200px;
+  min-width: 88px;
   overflow: hidden;
   text-overflow: ellipsis;
   transition: background 200ms ease, color 200ms ease;
+  flex-shrink: 0;
 }
 
 .bar-schedule-icon {
@@ -517,6 +538,11 @@ watch(() => route.fullPath, () => {
 .bar-schedule-label {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Keep chip space reserved even when empty — prevents layout shift */
+.bar-schedule-chip--hidden {
+  visibility: hidden;
 }
 
 /* 正在上课 — 温暖高亮 */
@@ -641,5 +667,12 @@ html[data-nav-style="pill"] .page-body {
   background: rgba(255, 180, 80, 0.18);
   pointer-events: none;
   mix-blend-mode: multiply;
+}
+
+/* Chrome < 140 mobile: mix-blend-mode can corrupt rendering.
+   Fall back to a plain warm overlay. */
+html[data-chrome-legacy] .screen-eyecare-overlay {
+  mix-blend-mode: normal;
+  background: rgba(255, 160, 60, 0.22);
 }
 </style>
