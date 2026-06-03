@@ -21,7 +21,11 @@ export default defineNuxtConfig({
       isCustomElement: (tag: string) => tag.startsWith("m3e-"),
     },
   },
-  // Build & runtime optimizations for low-end devices
+  // SSR is wasteful for this app: all templates are wrapped in <ClientOnly>.
+  // Use routeRules instead of global ssr:false to avoid Nuxt 4 dev-mode IPC issues.
+  routeRules: {
+    "/**": { ssr: false },
+  },
   nitro: {
     compressPublicAssets: { brotli: true, gzip: true },
     minify: true,

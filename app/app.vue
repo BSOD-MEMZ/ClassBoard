@@ -1,10 +1,19 @@
 <template>
-  <m3e-theme ref="themeEl" :color="themeColor" :scheme="themeScheme" motion="expressive">
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </m3e-theme>
-  <VirtualKeyboard v-if="keyboardMounted && keyboardType === 'ggboard'" />
+  <!-- Minimal loading state — shown until Vue hydrates (SSR disabled) -->
+  <ClientOnly>
+    <m3e-theme ref="themeEl" :color="themeColor" :scheme="themeScheme" motion="expressive">
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </m3e-theme>
+    <VirtualKeyboard v-if="keyboardMounted && keyboardType === 'ggboard'" />
+    <template #fallback>
+      <div class="app-loading">
+        <div class="app-loading-spinner"></div>
+        <span class="app-loading-text">ClassBoard</span>
+      </div>
+    </template>
+  </ClientOnly>
 </template>
 
 <script setup lang="ts">
@@ -90,3 +99,38 @@ if (import.meta.client) {
   });
 }
 </script>
+
+<style>
+/* ── Inline loading state (shows until Vue + M3E mount) ── */
+.app-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  height: 100dvh;
+  gap: 16px;
+  background: var(--md-sys-color-surface, #faf9ff);
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  font-family: "Roboto", "Noto Sans SC", sans-serif;
+}
+
+.app-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--md-sys-color-outline-variant, #cac4d0);
+  border-top-color: var(--md-sys-color-primary, #39c5bb);
+  border-radius: 50%;
+  animation: app-spin 0.8s linear infinite;
+}
+
+.app-loading-text {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+@keyframes app-spin {
+  to { transform: rotate(360deg); }
+}
+</style>
