@@ -104,7 +104,6 @@ let userSeeking = false;
 const videoFiles = [
   "因为热爱所以闪耀.mp4",
   "筑梦振翼——奋进中的南方中学.mp4",
-  "imf9.mp4",
 ];
 
 const playlist = computed<VideoEntry[]>(() =>
